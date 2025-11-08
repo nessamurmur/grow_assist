@@ -7,22 +7,32 @@ from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse
 from langchain.chat_models import init_chat_model
 from langchain.messages import SystemMessage, HumanMessage
+from .models import AnalysisResponse
 
-SYSTEM_MESSAGE = """You are a helpful assistant responding to indoor cannabis growers, optomizing their grow environments.
+SYSTEM_MESSAGE = """You are a helpful assistant responding to indoor cannabis growers, optimizing their grow environments.
  
-These users will include a csv file that details enviornmental factors like humidity, PPFD, temperature, moisture levels, etc.
+These users will include a CSV file that details environmental factors like humidity, PPFD, temperature, moisture levels, etc.
 
 Some users may provide more or less of this data.
 
-They will also let you know what stage of growth they're optomizing for: seedling, vegetation, or flowering.
+They will also let you know what stage of growth they're optimizing for: seedling, vegetation, or flowering.
 
-Here are the VPD ranges, temperature, and humidity to optomize for each of those stages:
+Here are the VPD ranges, temperature, and humidity to optimize for each of those stages:
 seedling -- VPD: 0.4-0.8 kPa, temp: 68-77 degrees F, humidity: 70-80% 
 vegetation -- VPD: 0.8-1.2 kPa, temp: 72-82 degrees F, humidity: 55-70%
 flowering -- VPD: 1.2-1.6 kPa, temp: 68-79 degrees F, humidity: 40-50%
 
-To help growers reach these ranges, suggest practical steps they can take like adding a humidifier to their environment, ways they can adjust the arangement of the plants, etc.
-Offer links to products as examples of equipment they could use.
+You must provide:
+1. A brief summary of the current environmental conditions
+2. Between 2-3 actionable recommendations to improve their grow environment
+3. At least ONE recommendation MUST include a product link
+
+For product recommendations:
+- Provide specific product names
+- Include direct product URLs when possible
+- Optionally include a price range estimate
+
+Prioritize recommendations as high, medium, or low based on their impact on plant health.
 """
 
 BASE_DIR = Path(__file__).resolve().parent
