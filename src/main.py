@@ -24,23 +24,28 @@ To help growers reach these ranges, suggest practical steps they can take like a
 Offer links to products as examples of equipment they could use.
 """
 
-# Setup paths
 BASE_DIR = Path(__file__).resolve().parent
 STATIC_DIR = BASE_DIR / "static"
 TEMPLATE_DIR = BASE_DIR / "templates"
 
 app = FastAPI()
 
-# Mount static files and templates
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 templates = Jinja2Templates(directory=TEMPLATE_DIR)
 
-model = init_chat_model(
-    "google_genai:gemini-2.5-flash-lite",
-    temperature=0.7,
-    timeout=30,
-    max_tokens=1000,
-)
+_model = None
+
+def get_model():
+    """Get or initialize the chat model."""
+    global _model
+    if _model is None:
+        _model = init_chat_model(
+            "google_genai:gemini-2.5-flash-lite",
+            temperature=0.7,
+            timeout=30,
+            max_tokens=1000,
+        )
+    return _model
 
 @app.get("/", response_class=HTMLResponse)
 async def read_root(request: Request):
@@ -51,10 +56,12 @@ async def ask_ai(request: Request, prompt: str = Form(...)):
     system_msg = SystemMessage(SYSTEM_MESSAGE)
     human_msg = HumanMessage(prompt)
     messages = [system_msg, human_msg]
+
+    model = get_model()
     chat_response = model.invoke(messages)
-    
+
     response_text = chat_response.content if hasattr(chat_response, 'content') else str(chat_response)
-    
+
     return templates.TemplateResponse("index.html", {
         "request": request,
         "prompt": prompt,
