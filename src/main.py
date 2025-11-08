@@ -17,7 +17,7 @@ They will also let you know what stage of growth they're optomizing for: seedlin
 
 Here are the VPD ranges, temperature, and humidity to optomize for each of those stages:
 seedling -- VPD: 0.4-0.8 kPa, temp: 68-77 degrees F, humidity: 70-80% 
-vegetation -- VPD: 0.4-1.2 kPa, temp: 72-82 degrees F, humidity: 55-70%
+vegetation -- VPD: 0.8-1.2 kPa, temp: 72-82 degrees F, humidity: 55-70%
 flowering -- VPD: 1.2-1.6 kPa, temp: 68-79 degrees F, humidity: 40-50%
 
 To help growers reach these ranges, suggest practical steps they can take like adding a humidifier to their environment, ways they can adjust the arangement of the plants, etc.
