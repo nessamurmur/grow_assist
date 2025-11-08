@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Grow Assist - Cannabis Grow Optimization</title>
-    <link rel="stylesheet" href="{{ url_for('static', path='/css/styles.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', path='/css/styles.css') }}?v=2">
 </head>
 <body>
     <div class="container">
@@ -16,26 +16,60 @@
         <main>
             <section class="input-section">
                 <h2>Upload Your Environmental Data</h2>
-                <form method="post" action="/analyze" enctype="multipart/form-data">
+                <form method="post" action="/analyze" enctype="multipart/form-data" id="analyzeForm">
                     <div class="form-group">
-                        <label for="growth_stage">Growth Stage:</label>
-                        <select name="growth_stage" id="growth_stage" required>
-                            <option value="" disabled {% if not growth_stage %}selected{% endif %}>Select growth stage...</option>
-                            <option value="seedling" {% if growth_stage == 'seedling' %}selected{% endif %}>Seedling</option>
-                            <option value="vegetation" {% if growth_stage == 'vegetation' %}selected{% endif %}>Vegetation</option>
-                            <option value="flowering" {% if growth_stage == 'flowering' %}selected{% endif %}>Flowering</option>
-                        </select>
+                        <label>Select Growth Stage:</label>
+                        <input type="hidden" name="growth_stage" id="growth_stage" required>
+                        <div class="growth-stage-selector">
+                            <button type="button" class="stage-card" data-stage="seedling" {% if growth_stage == 'seedling' %}data-selected="true"{% endif %}>
+                                <div class="stage-icon">🌱</div>
+                                <div class="stage-name">Seedling</div>
+                                <div class="stage-vpd">VPD 0.4-0.8 kPa</div>
+                                <div class="stage-details">
+                                    <span>68-77°F</span>
+                                    <span>70-80% RH</span>
+                                </div>
+                            </button>
+                            <button type="button" class="stage-card" data-stage="vegetation" {% if growth_stage == 'vegetation' %}data-selected="true"{% endif %}>
+                                <div class="stage-icon">🌿</div>
+                                <div class="stage-name">Vegetation</div>
+                                <div class="stage-vpd">VPD 0.4-1.2 kPa</div>
+                                <div class="stage-details">
+                                    <span>72-82°F</span>
+                                    <span>55-70% RH</span>
+                                </div>
+                            </button>
+                            <button type="button" class="stage-card" data-stage="flowering" {% if growth_stage == 'flowering' %}data-selected="true"{% endif %}>
+                                <div class="stage-icon">🌸</div>
+                                <div class="stage-name">Flowering</div>
+                                <div class="stage-vpd">VPD 1.2-1.6 kPa</div>
+                                <div class="stage-details">
+                                    <span>68-79°F</span>
+                                    <span>40-50% RH</span>
+                                </div>
+                            </button>
+                        </div>
                     </div>
 
                     <div class="form-group">
                         <label for="csv_file">Environmental Data (CSV):</label>
-                        <input 
-                            type="file" 
-                            name="csv_file" 
-                            id="csv_file"
-                            accept=".csv"
-                            required>
-                        <small>Upload a CSV file with environmental readings (temperature, humidity, PPFD, etc.)</small>
+                        <div class="file-upload-wrapper">
+                            <input 
+                                type="file" 
+                                name="csv_file" 
+                                id="csv_file"
+                                accept=".csv"
+                                required
+                                class="file-input">
+                            <label for="csv_file" class="file-upload-label">
+                                <div class="file-upload-icon">📊</div>
+                                <div class="file-upload-text">
+                                    <span class="file-upload-title">Choose CSV File</span>
+                                    <span class="file-upload-hint">or drag and drop</span>
+                                </div>
+                            </label>
+                            <div class="file-name-display" id="fileNameDisplay">No file selected</div>
+                        </div>
                         {% if csv_filename %}
                             <p class="file-info">Last uploaded: {{ csv_filename }}</p>
                         {% endif %}
@@ -65,5 +99,42 @@
             <p>Optimized for seedling, vegetation, and flowering stages</p>
         </footer>
     </div>
+
+    <script>
+        // Growth stage selection
+        const stageCards = document.querySelectorAll('.stage-card');
+        const stageInput = document.getElementById('growth_stage');
+        
+        stageCards.forEach(card => {
+            card.addEventListener('click', () => {
+                // Remove selected state from all cards
+                stageCards.forEach(c => c.removeAttribute('data-selected'));
+                // Add selected state to clicked card
+                card.setAttribute('data-selected', 'true');
+                // Update hidden input
+                stageInput.value = card.getAttribute('data-stage');
+            });
+        });
+
+        // Initialize with selected stage if exists
+        const selectedCard = document.querySelector('.stage-card[data-selected="true"]');
+        if (selectedCard) {
+            stageInput.value = selectedCard.getAttribute('data-stage');
+        }
+
+        // File upload display
+        const fileInput = document.getElementById('csv_file');
+        const fileNameDisplay = document.getElementById('fileNameDisplay');
+        
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                fileNameDisplay.textContent = e.target.files[0].name;
+                fileNameDisplay.classList.add('has-file');
+            } else {
+                fileNameDisplay.textContent = 'No file selected';
+                fileNameDisplay.classList.remove('has-file');
+            }
+        });
+    </script>
 </body>
 </html>
