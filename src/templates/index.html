@@ -15,20 +15,34 @@
 
         <main>
             <section class="input-section">
-                <h2>Ask the AI</h2>
-                <form method="post" action="/ask_ai">
+                <h2>Upload Your Environmental Data</h2>
+                <form method="post" action="/analyze" enctype="multipart/form-data">
                     <div class="form-group">
-                        <label for="prompt">Enter your grow environment data or question:</label>
-                        <textarea 
-                            name="prompt" 
-                            id="prompt"
-                            rows="6"
-                            placeholder="Example: I'm in the vegetation stage. Temperature is 78°F, humidity is 65%. How can I optimize my VPD?"
-                            required>{{ prompt if prompt else '' }}</textarea>
+                        <label for="growth_stage">Growth Stage:</label>
+                        <select name="growth_stage" id="growth_stage" required>
+                            <option value="" disabled {% if not growth_stage %}selected{% endif %}>Select growth stage...</option>
+                            <option value="seedling" {% if growth_stage == 'seedling' %}selected{% endif %}>Seedling</option>
+                            <option value="vegetation" {% if growth_stage == 'vegetation' %}selected{% endif %}>Vegetation</option>
+                            <option value="flowering" {% if growth_stage == 'flowering' %}selected{% endif %}>Flowering</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="csv_file">Environmental Data (CSV):</label>
+                        <input 
+                            type="file" 
+                            name="csv_file" 
+                            id="csv_file"
+                            accept=".csv"
+                            required>
+                        <small>Upload a CSV file with environmental readings (temperature, humidity, PPFD, etc.)</small>
+                        {% if csv_filename %}
+                            <p class="file-info">Last uploaded: {{ csv_filename }}</p>
+                        {% endif %}
                     </div>
                     
                     <button type="submit" class="btn-primary">
-                        Get Recommendations
+                        Analyze & Get Recommendations
                     </button>
                 </form>
             </section>
