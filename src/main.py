@@ -45,6 +45,7 @@ app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 templates = Jinja2Templates(directory=TEMPLATE_DIR)
 
 _model = None
+_structured_model = None
 
 def get_model():
     """Get or initialize the chat model."""
@@ -54,13 +55,21 @@ def get_model():
             "google_genai:gemini-2.5-flash-lite",
             temperature=0.7,
             timeout=30,
-            max_tokens=500,
+            max_tokens=1000,
         )
     return _model
 
+def get_structured_model():
+    """Get or initialize the structured chat model."""
+    global _structured_model
+    if _structured_model is None:
+        base_model = get_model()
+        _structured_model = base_model.with_structured_output(AnalysisResponse)
+    return _structured_model
+
 @app.get("/", response_class=HTMLResponse)
 async def read_root(request: Request):
-    return templates.TemplateResponse("index.html", {"request": request})
+    return templates.TemplateResponse(request, "index.html")
 
 def parse_csv_data(file_content: str) -> str:
     """Parse CSV file content and format it as a readable string."""
@@ -100,21 +109,23 @@ async def analyze(
 
 {parsed_data}
 
-Please analyze this environmental data for the {growth_stage} stage and provide recommendations for optimization."""
+Please analyze this environmental data for the {growth_stage} stage and provide recommendations for optimization.
+"""
 
     system_msg = SystemMessage(SYSTEM_MESSAGE)
     human_msg = HumanMessage(user_prompt)
     messages = [system_msg, human_msg]
 
-    model = get_model()
-    chat_response = model.invoke(messages)
+    structured_model = get_structured_model()
+    analysis_response = structured_model.invoke(messages)
 
-    response_text = chat_response.content if hasattr(chat_response, 'content') else str(chat_response)
-
-    return templates.TemplateResponse("index.html", {
-        "request": request,
-        "growth_stage": growth_stage,
-        "csv_filename": csv_file.filename,
-        "response": response_text
-    })
+    return templates.TemplateResponse(
+        request,
+        "index.html",
+        {
+            "growth_stage": growth_stage,
+            "csv_filename": csv_file.filename,
+            "analysis": analysis_response
+        }
+    )
 

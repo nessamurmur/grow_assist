@@ -84,9 +84,40 @@
             <section class="response-section">
                 <h2>AI Recommendations</h2>
                 <div class="response-container">
-                    {% if response %}
-                        <div class="ai-message">
-                            {{ response|safe }}
+                    {% if analysis %}
+                        <div class="analysis-summary">
+                            <h3>Summary</h3>
+                            <p>{{ analysis.summary }}</p>
+                        </div>
+                        
+                        <div class="recommendations-list">
+                            {% for rec in analysis.recommendations %}
+                            <div class="recommendation-card priority-{{ rec.priority }}">
+                                <div class="recommendation-header">
+                                    <h4>{{ rec.title }}</h4>
+                                    <span class="priority-badge priority-{{ rec.priority }}">
+                                        {{ rec.priority }}
+                                    </span>
+                                </div>
+                                <p class="recommendation-description">{{ rec.description }}</p>
+                                {% if rec.product %}
+                                <div class="product-recommendation">
+                                    <div class="product-info">
+                                        <span class="product-icon">🛒</span>
+                                        <div class="product-details">
+                                            <strong>{{ rec.product.name }}</strong>
+                                            {% if rec.product.price_range %}
+                                            <span class="product-price">{{ rec.product.price_range }}</span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <a href="{{ rec.product.url }}" target="_blank" rel="noopener noreferrer" class="product-link">
+                                        View Product →
+                                    </a>
+                                </div>
+                                {% endif %}
+                            </div>
+                            {% endfor %}
                         </div>
                     {% else %}
                         <p class="placeholder">Your AI recommendations will appear here...</p>
