@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grow Assist - Cannabis Grow Optimization</title>
+    <link rel="stylesheet" href="{{ url_for('static', path='/css/styles.css') }}">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🌱 Grow Assist</h1>
+            <p>AI-powered grow tent optimization</p>
+        </header>
+
+        <main>
+            <section class="input-section">
+                <h2>Ask the AI</h2>
+                <form method="post" action="/ask_ai">
+                    <div class="form-group">
+                        <label for="prompt">Enter your grow environment data or question:</label>
+                        <textarea 
+                            name="prompt" 
+                            id="prompt"
+                            rows="6"
+                            placeholder="Example: I'm in the vegetation stage. Temperature is 78°F, humidity is 65%. How can I optimize my VPD?"
+                            required>{{ prompt if prompt else '' }}</textarea>
+                    </div>
+                    
+                    <button type="submit" class="btn-primary">
+                        Get Recommendations
+                    </button>
+                </form>
+            </section>
+
+            <section class="response-section">
+                <h2>AI Recommendations</h2>
+                <div class="response-container">
+                    {% if response %}
+                        <div class="ai-message">
+                            {{ response|safe }}
+                        </div>
+                    {% else %}
+                        <p class="placeholder">Your AI recommendations will appear here...</p>
+                    {% endif %}
+                </div>
+            </section>
+        </main>
+
+        <footer>
+            <p>Optimized for seedling, vegetation, and flowering stages</p>
+        </footer>
+    </div>
+</body>
+</html>
