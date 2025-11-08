@@ -1,4 +1,3 @@
-import os
 from typing import Union
 from fastapi import FastAPI
 from langchain.chat_models import init_chat_model
