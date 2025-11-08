@@ -28,8 +28,10 @@ You must provide:
 3. At least ONE recommendation MUST include a product link
 
 For product recommendations:
-- Provide specific product names
-- Include direct product URLs when possible
+- Provide specific product names from reputable grow equipment retailers
+- IMPORTANT: Include direct product URLs from hydroponics/grow equipment stores (e.g., Spider Farmer, AC Infinity, Gorilla Grow Tent, HTG Supply, Grow Generation)
+- DO NOT use Amazon links - only use links from specialized grow equipment retailers
+- Verify that product URLs are real and working links to actual products
 - Optionally include a price range estimate
 
 Prioritize recommendations as high, medium, or low based on their impact on plant health.

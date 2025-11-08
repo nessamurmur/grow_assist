@@ -10,21 +10,21 @@ class TestProductLink:
         """Test creating a ProductLink with all fields."""
         product = ProductLink(
             name="LEVOIT Humidifier",
-            url="https://amazon.com/dp/B01MYGNGKK",
+            url="https://htgsupply.com/products/levoit-humidifier",
             price_range="$40-50"
         )
         assert product.name == "LEVOIT Humidifier"
-        assert product.url == "https://amazon.com/dp/B01MYGNGKK"
+        assert product.url == "https://htgsupply.com/products/levoit-humidifier"
         assert product.price_range == "$40-50"
 
     def test_product_link_without_price_range(self):
         """Test that price_range is optional."""
         product = ProductLink(
             name="AC Infinity Fan",
-            url="https://amazon.com/dp/B07DBDP5JM"
+            url="https://acinfinity.com/hvac-home-ventilation/inline-duct-fan-systems/"
         )
         assert product.name == "AC Infinity Fan"
-        assert product.url == "https://amazon.com/dp/B07DBDP5JM"
+        assert product.url == "https://acinfinity.com/hvac-home-ventilation/inline-duct-fan-systems/"
         assert product.price_range is None
 
     def test_product_link_requires_name(self):
@@ -39,6 +39,47 @@ class TestProductLink:
             ProductLink(name="Test Product")
         assert "url" in str(exc_info.value)
 
+    def test_product_link_rejects_amazon_urls(self):
+        """Test that Amazon URLs are rejected."""
+        amazon_urls = [
+            "https://amazon.com/dp/B01MYGNGKK",
+            "https://www.amazon.com/product/xyz",
+            "http://amazon.co.uk/item",
+            "https://amzn.to/abc123",
+            "https://a.co/d/shortlink",
+        ]
+        for url in amazon_urls:
+            with pytest.raises(ValidationError) as exc_info:
+                ProductLink(name="Test Product", url=url)
+            assert "amazon" in str(exc_info.value).lower()
+
+    def test_product_link_accepts_valid_grow_store_urls(self):
+        """Test that valid URLs from grow equipment retailers are accepted."""
+        valid_urls = [
+            "https://www.spider-farmer.com/products/sf-1000-led-grow-light",
+            "https://acinfinity.com/hydroponics-growers/controller-systems/",
+            "https://www.gorilla-grow-tent.com/gorilla-grow-tent-4x4",
+            "https://htgsupply.com/products/led-grow-lights",
+            "https://growgeneration.com/humidifier-dehumidifier.html",
+        ]
+        for url in valid_urls:
+            product = ProductLink(name="Test Product", url=url)
+            assert product.url == url
+
+    def test_product_link_rejects_malformed_urls(self):
+        """Test that malformed URLs are rejected."""
+        invalid_urls = [
+            "not-a-url",
+            "ftp://invalid-protocol.com",
+            "www.missing-protocol.com",
+            "https://nodomain",
+        ]
+        for url in invalid_urls:
+            with pytest.raises(ValidationError) as exc_info:
+                ProductLink(name="Test Product", url=url)
+            # Should fail validation
+            assert exc_info.value is not None
+
 
 class TestRecommendation:
     """Tests for the Recommendation model."""
@@ -51,7 +92,7 @@ class TestRecommendation:
             priority="high",
             product=ProductLink(
                 name="LEVOIT Humidifier",
-                url="https://amazon.com/dp/B01MYGNGKK",
+                url="https://htgsupply.com/products/levoit-humidifier",
                 price_range="$40-50"
             )
         )
@@ -124,7 +165,7 @@ class TestAnalysisResponse:
                     priority="high",
                     product=ProductLink(
                         name="LEVOIT Humidifier",
-                        url="https://amazon.com/dp/B01MYGNGKK"
+                        url="https://htgsupply.com/products/levoit-humidifier"
                     )
                 ),
                 Recommendation(
@@ -148,13 +189,13 @@ class TestAnalysisResponse:
                     title="Add a Humidifier",
                     description="Increase humidity",
                     priority="high",
-                    product=ProductLink(name="LEVOIT", url="https://amazon.com/test1")
+                    product=ProductLink(name="LEVOIT", url="https://htgsupply.com/products/levoit")
                 ),
                 Recommendation(
                     title="Install Circulation Fan",
                     description="Improve airflow",
                     priority="medium",
-                    product=ProductLink(name="AC Infinity", url="https://amazon.com/test2")
+                    product=ProductLink(name="AC Infinity", url="https://acinfinity.com/products/fan")
                 ),
                 Recommendation(
                     title="Adjust Plant Spacing",
@@ -174,7 +215,7 @@ class TestAnalysisResponse:
                         title="Test",
                         description="Test",
                         priority="high",
-                        product=ProductLink(name="Test", url="https://test.com")
+                        product=ProductLink(name="Test", url="https://htgsupply.com/test")
                     ),
                     Recommendation(
                         title="Test 2",
@@ -211,7 +252,7 @@ class TestAnalysisResponse:
                         title=f"Recommendation {i}",
                         description=f"Description {i}",
                         priority="high" if i == 0 else "medium",
-                        product=ProductLink(name="Test", url="https://test.com") if i == 0 else None
+                        product=ProductLink(name="Test", url="https://htgsupply.com/test") if i == 0 else None
                     )
                     for i in range(4)  # 4 recommendations - too many!
                 ]
@@ -247,7 +288,7 @@ class TestAnalysisResponse:
                     title="With Product",
                     description="Has a product link",
                     priority="high",
-                    product=ProductLink(name="Test Product", url="https://amazon.com/test")
+                    product=ProductLink(name="Test Product", url="https://htgsupply.com/test")
                 ),
                 Recommendation(
                     title="Without Product",
@@ -269,13 +310,13 @@ class TestAnalysisResponse:
                     title="First Product",
                     description="First recommendation",
                     priority="high",
-                    product=ProductLink(name="Product 1", url="https://amazon.com/test1")
+                    product=ProductLink(name="Product 1", url="https://htgsupply.com/test1")
                 ),
                 Recommendation(
                     title="Second Product",
                     description="Second recommendation",
                     priority="medium",
-                    product=ProductLink(name="Product 2", url="https://amazon.com/test2")
+                    product=ProductLink(name="Product 2", url="https://acinfinity.com/test2")
                 )
             ]
         )
