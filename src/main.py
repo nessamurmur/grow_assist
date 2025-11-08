@@ -43,7 +43,7 @@ def get_model():
             "google_genai:gemini-2.5-flash-lite",
             temperature=0.7,
             timeout=30,
-            max_tokens=1000,
+            max_tokens=500,
         )
     return _model
 
