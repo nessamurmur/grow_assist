@@ -7,7 +7,6 @@ from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain.messages import SystemMessage, HumanMessage
-from google.ai.generativelanguage_v1beta.types import Tool as GenAITool
 from .models import AnalysisResponse
 
 product_links = ""
