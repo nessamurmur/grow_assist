@@ -29,7 +29,7 @@ Then:
 
 ```
 uv sync
-uv run fastapi src/main.py
+uv run fastapi dev src/main.py
 ```
 
 ## Testing
