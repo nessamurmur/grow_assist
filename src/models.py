@@ -14,9 +14,6 @@ class ProductLink(BaseModel):
     @field_validator("url")
     @classmethod
     def validate_url(cls, url: str) -> str:
-        # Check if it's a valid URL format
-        url_lower = url.lower()
-
         # Basic URL validation - must start with http:// or https://
         if not url.startswith(('http://', 'https://')):
             raise ValueError("URL must start with http:// or https://")

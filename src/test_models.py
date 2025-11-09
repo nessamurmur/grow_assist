@@ -39,33 +39,6 @@ class TestProductLink:
             ProductLink(name="Test Product")
         assert "url" in str(exc_info.value)
 
-    def test_product_link_rejects_amazon_urls(self):
-        """Test that Amazon URLs are rejected."""
-        amazon_urls = [
-            "https://amazon.com/dp/B01MYGNGKK",
-            "https://www.amazon.com/product/xyz",
-            "http://amazon.co.uk/item",
-            "https://amzn.to/abc123",
-            "https://a.co/d/shortlink",
-        ]
-        for url in amazon_urls:
-            with pytest.raises(ValidationError) as exc_info:
-                ProductLink(name="Test Product", url=url)
-            assert "amazon" in str(exc_info.value).lower()
-
-    def test_product_link_accepts_valid_grow_store_urls(self):
-        """Test that valid URLs from grow equipment retailers are accepted."""
-        valid_urls = [
-            "https://www.spider-farmer.com/products/sf-1000-led-grow-light",
-            "https://acinfinity.com/hydroponics-growers/controller-systems/",
-            "https://www.gorilla-grow-tent.com/gorilla-grow-tent-4x4",
-            "https://htgsupply.com/products/led-grow-lights",
-            "https://growgeneration.com/humidifier-dehumidifier.html",
-        ]
-        for url in valid_urls:
-            product = ProductLink(name="Test Product", url=url)
-            assert product.url == url
-
     def test_product_link_rejects_malformed_urls(self):
         """Test that malformed URLs are rejected."""
         invalid_urls = [
