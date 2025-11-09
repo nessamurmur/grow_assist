@@ -14,14 +14,8 @@ class ProductLink(BaseModel):
     @field_validator("url")
     @classmethod
     def validate_url(cls, url: str) -> str:
-        """Ensure URL is valid and not from Amazon."""
         # Check if it's a valid URL format
         url_lower = url.lower()
-
-        # Block Amazon domains
-        amazon_domains = ['amazon.com', 'amazon.', 'amzn.', 'a.co']
-        if any(domain in url_lower for domain in amazon_domains):
-            raise ValueError("Amazon links are not allowed. Please use links from hydroponics or grow equipment retailers.")
 
         # Basic URL validation - must start with http:// or https://
         if not url.startswith(('http://', 'https://')):
