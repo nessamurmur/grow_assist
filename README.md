@@ -2,46 +2,44 @@
 
 This is a toy application to help new indoor cannabis growers optimize conditions in their grow tent.
 
-It takes in environmental data and gives about 3 suggestions of
-improvements to make, sometimes suggesting relevant products.
+It takes environmental data and gives about three suggestions of improvements to make, sometimes suggesting a relevant product.
 
-Here are it's current limitations:
+The advice still needs prompt work. It should talk about the tent in plain language, for example telling a grower the air is too humid and what to change, with a product link when one would help. Analysis is not connected yet: this repository is the Gleam shell that later work will fill in.
 
-1. It needs some prompt engineering to give more helpful advice.
-Currently, the advice is too generic and it's mostly talking in terms of
-VPD. It should instead say things like "It's looking like your
-environment is too humid! If you're using a humidifier, try turning it
-down. You could also try increasing your exhaust fan speed. If that's
-not working, look into getting a humidifier like this one" with a link
-included.
-2. It's messy. It's a proof of concept. Most of all the action happens
-in one file and the tests are fairly limited. Future improvements would
-include things like writing some evals that can be regularly run,
-refactoring the code to separate the responsibilities a bit better, etc.
+## Development
 
-I just built this to have a small, few hour project to play with
-langchain for a while.
+Install Gleam and Erlang/OTP 28 or 29, then from the repository root:
 
-## Setup
-
-`cp .env.example .env` and add an api key for Google AI Studio.
-Then:
-
-```
-uv sync
-uv run fastapi dev src/main.py
+```sh
+gleam run
 ```
 
-## Testing
+The server listens on `0.0.0.0:8080`. Set `PORT` to use a different port.
 
-`uv run pytest src -v`
+API keys are bring-your-own and stay in the browser. The server does not store or log them.
 
-## Architecture
+The page is server-rendered. To also build the Lustre browser bundle the page loads from `/static/client.js`:
 
-### API
+```sh
+cd client
+gleam run -m lustre/dev build --outdir=../priv/static --no-html
+```
 
-FastAPI
+## Checks
 
-### Front End
+Run these in the repository root, `shared/`, and `client/`:
 
-Jinja templates
+```sh
+gleam format --check
+gleam test
+gleam build
+```
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for the merge checks.
+
+## Layout
+
+- `src/` is the Wisp and Mist server.
+- `client/` is the Lustre application.
+- `shared/` holds the analysis types, the prompt filler, and the shell view.
+- `priv/system_prompt.txt` and `priv/product_links.csv` are the prompt and catalog carried over from the previous app.
