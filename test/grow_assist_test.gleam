@@ -1,9 +1,15 @@
+import gleam/erlang/process
 import gleam/http
+import gleam/int
 import gleam/list
 import gleam/string
 import gleeunit
+import mist
+import shellout
+import simplifile
 import wisp
 import wisp/simulate
+import wisp/wisp_mist
 
 import grow_assist/assets
 import grow_assist/router
@@ -32,6 +38,43 @@ pub fn home_page_returns_shell_test() {
 pub fn unknown_path_is_not_found_test() {
   let response = router.handle_request(simulate.request(http.Get, "/analyze"))
   assert response.status == 404
+}
+
+pub fn head_stylesheet_has_no_file_body_test() {
+  let response =
+    router.handle_request(simulate.request(http.Head, "/static/styles.css"))
+  assert response.status == 200
+  let assert wisp.Text(body) = response.body
+  assert body == ""
+  let assert Ok(css_length) = list.key_find(response.headers, "content-length")
+  let assert Ok(css_length) = int.parse(css_length)
+  let assert Ok(priv) = wisp.priv_directory("grow_assist")
+  let assert Ok(info) = simplifile.file_info(priv <> "/static/styles.css")
+  assert css_length == info.size
+}
+
+pub fn head_stylesheet_then_get_reuses_the_connection_test() {
+  let port_subject = process.new_subject()
+  let assert Ok(_) =
+    router.handle_request
+    |> wisp_mist.handler(wisp.random_string(64))
+    |> mist.new
+    |> mist.bind("127.0.0.1")
+    |> mist.port(0)
+    |> mist.after_start(fn(port, _, _) { process.send(port_subject, port) })
+    |> mist.start
+
+  let assert Ok(port) = process.receive(port_subject, 5000)
+  let assert Ok(output) =
+    shellout.command(
+      run: "python3",
+      with: ["test/head_keepalive.py", int.to_string(port)],
+      in: ".",
+      opt: [],
+    )
+  assert string.contains(does: output, contain: "ok")
+  // Leave the listener until the test VM exits. Killing the linked
+  // supervisor dumps crash reports into the test log.
 }
 
 pub fn stylesheet_is_served_test() {
