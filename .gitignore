@@ -1,2 +1,8 @@
+*.beam
+*.ez
+build
+erl_crash.dump
 .env
-__pycache__/
+.lustre/
+.playwright-mcp/
+priv/static/client.js

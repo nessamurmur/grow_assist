@@ -1,0 +1,10 @@
+name = "shared"
+version = "0.1.0"
+description = "Types and prompt text shared by the Grow Assist server and client"
+
+[dependencies]
+gleam_stdlib = ">= 1.0.0 and < 2.0.0"
+lustre = ">= 5.8.0 and < 6.0.0"
+
+[dev_dependencies]
+gleeunit = ">= 1.0.0 and < 2.0.0"

@@ -1,0 +1,13 @@
+name = "client"
+version = "0.1.0"
+description = "Grow Assist browser shell"
+target = "javascript"
+
+[dependencies]
+gleam_stdlib = ">= 1.0.0 and < 2.0.0"
+lustre = ">= 5.8.0 and < 6.0.0"
+shared = { path = "../shared" }
+
+[dev_dependencies]
+gleeunit = ">= 1.0.0 and < 2.0.0"
+lustre_dev_tools = ">= 2.4.0 and < 3.0.0"
