@@ -1,0 +1,90 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  gleam:
+    name: ${{ matrix.package }}
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        package:
+          - root
+          - shared
+          - client
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Gleam, OTP, Elixir, and rebar3
+        uses: erlef/setup-beam@v1
+        with:
+          otp-version: "29.1.1"
+          elixir-version: "1.20.5"
+          gleam-version: "1.19.2"
+          rebar3-version: "3.28.0"
+          version-type: strict
+
+      - name: Cache package builds
+        uses: actions/cache@v4
+        with:
+          path: |
+            build/packages
+            shared/build/packages
+            client/build/packages
+            elixir/deps
+            elixir/_build
+          key: otp-29.1.1-elixir-1.20.5-gleam-1.19.2-${{ matrix.package }}-${{ hashFiles('manifest.toml', 'shared/manifest.toml', 'client/manifest.toml', 'elixir/mix.lock') }}
+          restore-keys: |
+            otp-29.1.1-elixir-1.20.5-gleam-1.19.2-${{ matrix.package }}-
+
+      - name: Check
+        run: scripts/check.sh ${{ matrix.package }}
+
+  elixir:
+    name: elixir
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Gleam, OTP, Elixir, and rebar3
+        uses: erlef/setup-beam@v1
+        with:
+          otp-version: "29.1.1"
+          elixir-version: "1.20.5"
+          gleam-version: "1.19.2"
+          rebar3-version: "3.28.0"
+          version-type: strict
+
+      - name: Cache Mix builds
+        uses: actions/cache@v4
+        with:
+          path: |
+            elixir/deps
+            elixir/_build
+          key: otp-29.1.1-elixir-1.20.5-${{ hashFiles('elixir/mix.lock') }}
+          restore-keys: |
+            otp-29.1.1-elixir-1.20.5-
+
+      - name: Check formatting
+        working-directory: elixir
+        run: mix format --check-formatted
+
+      - name: Audit Hex dependencies
+        working-directory: elixir
+        run: |
+          mix deps.get
+          mix hex.audit

@@ -10,7 +10,7 @@ Run `scripts/check.sh` from the repository root. It checks the root package, `sh
 
 glinter counts are compared with `lint-baseline.json`. A higher total or a higher per-rule count fails the script. Do not raise a count in that file. When a change touches a file that already has a finding, fix a cheap finding in that file and run `scripts/check.sh --update-lint-baseline` in the same change. That command writes the lower counts and exits non-zero if a count would rise.
 
-GitHub Actions will run the same script in NES-152. Until that workflow exists, `scripts/check.sh` is the gate.
+`scripts/check.sh` is the local gate. The CI workflow must be green before merge. It runs `scripts/check.sh` for the root package, `shared/`, and `client/`, and it runs `mix format --check-formatted` and `mix hex.audit` in `elixir/`.
 
 ### Required evidence in the PR description
 
@@ -30,4 +30,4 @@ Squash merge.
 
 ### Releases and versioning
 
-Every merge to main deploys to Fly.io through [.github/workflows/fly-deploy.yml](.github/workflows/fly-deploy.yml). There is no versioning yet.
+Every merge to main runs CI. Fly.io deploys the latest commit on main through [.github/workflows/fly-deploy.yml](.github/workflows/fly-deploy.yml) only after CI succeeds on it. Re-running CI for an older commit does not deploy. There is no versioning yet.
