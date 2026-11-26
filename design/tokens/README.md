@@ -56,7 +56,7 @@ These names are not types. Confirm them before anyone generates app CSS from thi
 
 ## Inventory
 
-Every declaration in `priv/static/styles.css`. Counts are declarations, not selectors. A grouped selector is one declaration. `var()` is expanded through the `:root` custom properties, so a color counts at the custom property and again at each use. `inherit` on `button.stage-card` is the `font` shorthand, stored with the font family.
+Every declaration in `priv/static/styles.css`. Counts are declarations, not selectors. A grouped selector is one declaration. A shorthand counts once for each distinct length in that declaration. `var()` is expanded through the `:root` custom properties, so a color counts at the custom property and again at each use. `font: inherit` and `font-family: inherit` stay in the font-family row. `color: inherit` on `button.stage-card` is the color row.
 
 
 ### border-width
@@ -85,7 +85,6 @@ Every declaration in `priv/static/styles.css`. Counts are declarations, not sele
 | `#94a3b8` | 9 | :root; textarea::placeholder; .stage-details; .file-upload-hint; .file-name-display; .file-info; small; .response-container .placeholder; footer |
 | `#cbd5e1` | 5 | :root; header p; label; .analysis-loading; .recommendation-description |
 | `#059669` | 4 | :root; .btn-primary; .product-link; .product-link:hover |
-| `inherit` | 4 | textarea; input[type="password"], input[type="text"]; button.stage-card |
 | `#8b5cf6` | 3 | :root; header h1; .stage-card::before |
 | `rgba(0, 0, 0, 0.3)` | 3 | :root; section; .recommendation-card:hover |
 | `rgba(16, 185, 129, 0.1)` | 3 | textarea:focus, input:focus; .file-name-display.has-file; .analysis-summary |
@@ -101,6 +100,7 @@ Every declaration in `priv/static/styles.css`. Counts are declarations, not sele
 | `#ef4444` | 1 | .recommendation-card.priority-high |
 | `#f59e0b` | 1 | .recommendation-card.priority-medium |
 | `#fcd34d` | 1 | .priority-badge.priority-medium |
+| `inherit` | 1 | button.stage-card |
 | `rgba(139, 92, 246, 0.05)` | 1 | .file-upload-label:hover |
 | `rgba(139, 92, 246, 0.1)` | 1 | .analysis-summary |
 | `rgba(16, 185, 129, 0.05)` | 1 | .file-upload-label:hover |
@@ -229,7 +229,7 @@ Every declaration in `priv/static/styles.css`. Counts are declarations, not sele
 | Value | Count | Where |
 | --- | --- | --- |
 | `1rem` | 21 | textarea; input[type="password"], input[type="text"]; .analysis-loading; .growth-stage-selector; .stage-card; .file-name-display; .btn-primary; .response-container .placeholder; .response-container p; .recommendation-header; .recommendation-description; .product-recommendation; .product-info; @640 .container; @640 header; @640 section; @640 .stage-card; @640 .file-upload-label; @640 .product-recommendation |
-| `0` | 15 | *; .container; header; .stage-card::before; .response-container p:last-child; .analysis-summary p; .recommendation-header h4; footer; @640 header |
+| `0` | 13 | *; .container; header; .stage-card::before; .response-container p:last-child; .analysis-summary p; .recommendation-header h4; footer; @640 header |
 | `0.75rem` | 11 | .growth-stage-selector; .stage-icon; .stage-vpd; .file-upload-wrapper; .file-name-display; .analysis-summary h3; .priority-badge; .product-link; @640 .growth-stage-selector; @640 .recommendation-header |
 | `1.5rem` | 10 | section; section h2; .form-group; .stage-card; .file-upload-label; .response-container; .analysis-summary; .recommendation-card; .product-link |
 | `2rem` | 7 | .container; header; main; .btn-primary; .analysis-summary; footer; @640 header |

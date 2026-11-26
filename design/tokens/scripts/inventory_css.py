@@ -130,6 +130,17 @@ def scan_block(body, media):
             yield selector, rule_body, media
 
 
+def is_color_property(prop: str) -> bool:
+    return prop == "color" or prop.endswith("-color") or prop in (
+        "background",
+        "border",
+        "outline",
+        "box-shadow",
+        "fill",
+        "stroke",
+    )
+
+
 def add(bucket, category, value, where):
     key = (category, normalize(value))
     bucket[key]["value"] = normalize(value)
@@ -202,9 +213,15 @@ def main():
                 if prop != "border-radius":
                     # Unitless 0 is a spacing value. Radius is recorded above.
                     lengths += [token for token in re.findall(r"(?<![\d.])0(?![\d.])", expanded)]
+                    seen = set()
                     for length in lengths:
+                        if length in seen:
+                            continue
+                        seen.add(length)
                         add(bucket, "spacing", length, where)
             for color in COLOR_RE.findall(expanded):
+                if color == "inherit" and not is_color_property(prop):
+                    continue
                 add(bucket, "color", color, where)
 
     for match in BREAK_RE.finditer(text):
