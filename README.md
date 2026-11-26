@@ -4,7 +4,7 @@ This is a toy application to help new indoor cannabis growers optimize condition
 
 It takes environmental data and gives about three suggestions of improvements to make, sometimes suggesting a relevant product.
 
-The advice still needs prompt work. It should talk about the tent in plain language, for example telling a grower the air is too humid and what to change, with a product link when one would help. Analysis is not connected yet: this repository is the Gleam shell that later work will fill in.
+The advice still needs prompt work. It should talk about the tent in plain language, for example telling a grower the air is too humid and what to change, with a product link when one would help. A grower picks a growth stage, pastes readings and an Ollama API key, and presses Analyze. The model is `inkling-2-small` on hosted Ollama. The key stays in the browser and is sent only on that request.
 
 ## Development
 
@@ -72,7 +72,23 @@ The next push to `main` deploys. Read the logs with:
 fly logs -a grow-assist
 ```
 
-The runtime image is the slim Alpine Erlang image from the [Gleam Fly guide](https://gleam.run/deployment/fly/). Elixir, Hex, and rebar3 are only in the build stage, so `req_llm` can compile later. This shipment does not load Elixir modules, so the running image does not include Elixir.
+The runtime image is the Alpine Erlang image from the [Gleam Fly guide](https://gleam.run/deployment/fly/), plus the Elixir standard library and the compiled ReqLLM wrapper. Elixir, Hex, and rebar3 in the build stage compile that wrapper and the browser bundle.
+
+Build and run the production image locally. It listens on port 8080.
+
+```sh
+docker build -t grow-assist:local .
+docker run --rm -p 8080:8080 grow-assist:local
+```
+
+With a hosted Ollama key in the environment, one real analyze against that process or against production:
+
+```sh
+GROW_ASSIST_OLLAMA_TEST_KEY=... scripts/live-check.sh http://127.0.0.1:8080
+GROW_ASSIST_OLLAMA_TEST_KEY=... scripts/live-check.sh https://grow-assist.fly.dev
+```
+
+The script prints the response and never the key. It exits non-zero unless the response has a summary, 2 or 3 recommendations, and at least one product link. Root package tests need the wrapper compiled first: `scripts/compile-wrapper.sh`, then `ERL_LIBS` set to `elixir/_build/dev/lib` and the Elixir `lib` directory. The verify skill has the exact commands.
 
 ## Layout
 

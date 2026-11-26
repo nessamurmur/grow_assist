@@ -6,3 +6,5 @@ erl_crash.dump
 .lustre/
 .playwright-mcp/
 priv/static/client.js
+elixir/deps
+elixir/_build

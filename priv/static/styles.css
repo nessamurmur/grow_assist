@@ -118,10 +118,40 @@ textarea {
     transition: all 0.2s ease;
 }
 
-textarea:focus {
+textarea:focus,
+input:focus {
     outline: none;
     border-color: var(--primary);
     box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+}
+
+input[type="password"],
+input[type="text"] {
+    width: 100%;
+    padding: 1rem;
+    background: var(--background);
+    border: 2px solid var(--border);
+    border-radius: 8px;
+    color: var(--text-primary);
+    font-size: 1rem;
+    font-family: inherit;
+}
+
+button.stage-card {
+    font: inherit;
+    color: inherit;
+    width: 100%;
+    appearance: none;
+}
+
+.analysis-error {
+    color: #fca5a5;
+}
+
+.analysis-loading {
+    color: var(--text-secondary);
+    text-align: center;
+    padding: 3rem 1rem;
 }
 
 textarea::placeholder {

@@ -13,6 +13,7 @@ One thin, tested Elixir wrapper is the only ReqLLM surface.
 - Option maps use atom keys.
 - Raises become `{:error, _}`.
 - `generate_object` is decoded into Gleam types with `gleam/dynamic`.
+- The hardcoded model is `inkling-2-small` on hosted Ollama (`https://ollama.com/v1`) with the bearer key from the request. ReqLLM's `:ollama` provider does not send that header, so the wrapper uses ReqLLM's OpenAI-compatible provider with `openai_compatible_backend: :ollama`. If `generate_object` fails, the wrapper falls back to JSON-mode text and the same Gleam decoder.
 
 Agents must not invent their own `@external` bindings.
 
