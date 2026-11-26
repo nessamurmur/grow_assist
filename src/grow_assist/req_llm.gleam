@@ -20,7 +20,7 @@ pub fn recommend_with(
   system: String,
   user: String,
   api_key: String,
-  generator: fn(Dynamic) -> String,
+  generator: fn(String) -> String,
 ) -> Result(AnalysisResponse, String) {
   case external_analyze_with(api_key, system, user, generator) {
     Error(reason) -> Error(reason)
@@ -44,7 +44,7 @@ fn external_analyze_with(
   api_key: String,
   system: String,
   user: String,
-  generator: fn(Dynamic) -> String,
+  generator: fn(String) -> String,
 ) -> Result(Dynamic, String)
 
 @external(erlang, "Elixir.GrowAssist.ReqLlm", "preview")

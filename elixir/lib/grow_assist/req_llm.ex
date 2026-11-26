@@ -9,7 +9,8 @@ defmodule GrowAssist.ReqLlm do
   `openai_compatible_backend: :ollama`, which still sends the bearer key.
 
   Option maps use atom keys. Raises and Erlang errors become `{:error, _}`.
-  `generate_object` runs first. If it fails, the same call falls back to
+  `generate_object` runs first. The schema asks for the analysis shape. An
+  object Gleam cannot decode is not returned: the same call falls back to
   JSON-mode text, which Gleam decodes with `gleam/dynamic` into the analysis
   types. The API key is not written to disk, not stored with `ReqLLM.put_key/2`,
   and is stripped from errors and log events for the duration of the call.
@@ -27,10 +28,48 @@ defmodule GrowAssist.ReqLlm do
   @receive_timeout 60_000
   @out_of_tokens "model ran out of tokens"
 
-  @schema [
-    summary: [type: :string, required: true],
-    recommendations: [type: {:list, :map}, required: true]
-  ]
+  @priorities ["high", "medium", "low", "high impact", "medium impact", "low impact"]
+
+  # A map schema so the model is asked for minItems/maxItems. NimbleOptions
+  # lists in this ReqLLM version do not carry a length into JSON Schema.
+  @schema %{
+    "type" => "object",
+    "additionalProperties" => false,
+    "required" => ["summary", "recommendations"],
+    "properties" => %{
+      "summary" => %{"type" => "string", "minLength" => 1},
+      "recommendations" => %{
+        "type" => "array",
+        "minItems" => 2,
+        "maxItems" => 3,
+        "items" => %{
+          "type" => "object",
+          "additionalProperties" => false,
+          "required" => ["title", "description", "priority"],
+          "properties" => %{
+            "title" => %{"type" => "string", "minLength" => 1},
+            "description" => %{"type" => "string", "minLength" => 1},
+            "priority" => %{"type" => "string", "enum" => @priorities},
+            "product" => %{
+              "anyOf" => [
+                %{
+                  "type" => "object",
+                  "additionalProperties" => false,
+                  "required" => ["name", "url"],
+                  "properties" => %{
+                    "name" => %{"type" => "string", "minLength" => 1},
+                    "url" => %{"type" => "string", "minLength" => 1},
+                    "price_range" => %{"type" => ["string", "null"]}
+                  }
+                },
+                %{"type" => "null"}
+              ]
+            }
+          }
+        }
+      }
+    }
+  }
 
   def analyze(api_key, system, user)
       when is_binary(api_key) and is_binary(system) and is_binary(user) do
@@ -44,16 +83,10 @@ defmodule GrowAssist.ReqLlm do
   def analyze_with(api_key, system, user, generator)
       when is_binary(api_key) and is_binary(system) and is_binary(user) and
              is_function(generator, 1) do
-    opts = options(api_key, system, user)
-
     guarded(api_key, fn ->
-      case generator.(opts) do
-        json when is_binary(json) ->
-          case Jason.decode(json) do
-            {:ok, map} when is_map(map) -> map
-            _ -> raise "model returned invalid JSON"
-          end
-      end
+      finish_object(read_generated(generator), fn ->
+        require_usable(decode_json_text(generator.("json")))
+      end)
     end)
   end
 
@@ -100,7 +133,7 @@ defmodule GrowAssist.ReqLlm do
     ensure_started!()
 
     case ReqLLM.Schema.compile(@schema) do
-      {:ok, _compiled} -> {:ok, "compiled"}
+      {:ok, %{schema: schema}} -> {:ok, Jason.encode!(schema)}
       other -> {:error, public_error(inspect(other), "")}
     end
   end
@@ -173,10 +206,54 @@ defmodule GrowAssist.ReqLlm do
       receive_timeout: opts.receive_timeout
     ]
 
-    case safe_generate_object(model, opts.user, req_opts) do
-      {:ok, object} -> stringify(object)
-      {:error, :exhausted} -> raise @out_of_tokens
-      {:error, _reason} -> json_mode(model, opts, req_opts)
+    finish_object(safe_generate_object(model, opts.user, req_opts), fn ->
+      require_usable(json_mode(model, opts, req_opts))
+    end)
+  end
+
+  defp read_generated(generator) do
+    try do
+      case generator.("object") do
+        json when is_binary(json) ->
+          case Jason.decode(json) do
+            {:ok, map} when is_map(map) -> {:ok, map}
+            _ -> {:error, :invalid_json}
+          end
+
+        _ ->
+          {:error, :invalid_json}
+      end
+    rescue
+      error -> {:error, error}
+    catch
+      kind, reason -> {:error, {kind, reason}}
+    end
+  end
+
+  defp finish_object({:ok, object}, fallback) do
+    map = stringify(object)
+
+    case usable?(map) do
+      true -> map
+      false -> fallback.()
+    end
+  end
+
+  defp finish_object({:error, :exhausted}, _fallback), do: raise(@out_of_tokens)
+
+  defp finish_object({:error, _reason}, fallback), do: fallback.()
+
+  defp require_usable(map) do
+    case usable?(map) do
+      true -> map
+      false -> raise "The model response did not match the analysis shape."
+    end
+  end
+
+  defp usable?(map) when is_map(map) do
+    case :"shared@analysis_json".decode_dynamic(map) do
+      {:ok, _} -> true
+      _ -> false
     end
   end
 
