@@ -6,20 +6,18 @@ The merge bot evaluates a pull request against this section. Every item below ha
 
 ### Required checks
 
-Run these three commands in each Gleam package. The packages are the repository root (the Wisp/Mist server), `shared/`, and `client/`.
+Run `scripts/check.sh` from the repository root. It checks the root package, `shared/`, and `client/`. In each package it runs `gleam format --check`, `gleam build --warnings-as-errors`, `gleam test`, and glinter. A `gleam.toml` for any other package fails the script, including when you name one package. Each package it finds needs an entry in `lint-baseline.json`. `build/`, `_build/`, and `deps/` are ignored.
 
-- `gleam format --check`
-- `gleam test`
-- `gleam build`
+glinter counts are compared with `lint-baseline.json`. A higher total or a higher per-rule count fails the script. Do not raise a count in that file. When a change touches a file that already has a finding, fix a cheap finding in that file and run `scripts/check.sh --update-lint-baseline` in the same change. That command writes the lower counts and exits non-zero if a count would rise.
 
-All of them must succeed. GitHub Actions will run the same checks later in NES-152. Until that workflow exists, run them locally.
+GitHub Actions will run the same script in NES-152. Until that workflow exists, `scripts/check.sh` is the gate.
 
 ### Required evidence in the PR description
 
 The pull request description must include:
 
-- The commands you ran, pasted with their real output. That means `gleam format --check`, `gleam test`, and `gleam build` for each package above.
-- A screenshot or `curl` output of the user-visible result.
+- The `scripts/check.sh` output.
+- A screenshot or `curl` output of the user-visible result when the change has one.
 
 ### PR and commit conventions
 

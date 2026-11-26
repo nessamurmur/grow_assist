@@ -16,3 +16,14 @@ shared = { path = "./shared" }
 
 [dev_dependencies]
 gleeunit = ">= 1.0.0 and < 2.0.0"
+glinter = ">= 2.19.2 and < 2.20.0"
+
+[tools.glinter]
+include = ["src/"]
+
+[tools.glinter.rules]
+label_possible = "off"
+prefer_guard_clause = "off"
+
+[tools.glinter.ignore]
+"test/**/*.gleam" = ["assert_ok_pattern"]
