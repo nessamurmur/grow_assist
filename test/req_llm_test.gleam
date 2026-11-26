@@ -122,7 +122,39 @@ pub fn a_raise_that_includes_the_key_is_redacted_test() {
 }
 
 pub fn object_schema_compiles_test() {
-  let assert Ok(_) = req_llm.schema_compiles()
+  let assert Ok(schema) = req_llm.schema_compiles()
+  assert string.contains(schema, "minItems")
+  assert string.contains(schema, "maxItems")
+  assert string.contains(schema, "\"title\"")
+  assert string.contains(schema, "\"priority\"")
+  assert string.contains(schema, "high impact")
+  assert string.contains(schema, "\"url\"")
+}
+
+const loose_object =
+  "{\"summary\":\"ok\",\"recommendations\":[{\"foo\":\"bar\"}]}"
+
+pub fn loose_object_falls_back_to_json_mode_test() {
+  let assert Ok(response) =
+    req_llm.recommend_with("system", "user", canary, fn(phase) {
+      case phase {
+        "object" -> loose_object
+        _ -> fixture
+      }
+    })
+  assert analysis.summary(response) == "The tent is too humid for flowering."
+  assert list.length(analysis.recommendations(response)) == 2
+}
+
+pub fn loose_object_and_bad_fallback_is_an_error_test() {
+  let assert Error(message) =
+    req_llm.recommend_with("system", "user", canary, fn(phase) {
+      case phase {
+        "object" -> loose_object
+        _ -> "{\"summary\":\"ok\",\"recommendations\":[{\"foo\":\"bar\"}]}"
+      }
+    })
+  assert message == "The model response did not match the analysis shape."
 }
 
 pub fn length_finish_is_not_decoded_test() {
