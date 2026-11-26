@@ -1,0 +1,162 @@
+[
+  {
+    "name": "white on primary",
+    "kind": "text",
+    "bar": 4.5,
+    "ratio": 2.54,
+    "lc": -54.2,
+    "pass": false,
+    "text": "#ffffff",
+    "bg": "#10b981"
+  },
+  {
+    "name": "white on primary hover",
+    "kind": "text",
+    "bar": 4.5,
+    "ratio": 3.77,
+    "lc": -70.1,
+    "pass": false,
+    "text": "#ffffff",
+    "bg": "#059669"
+  },
+  {
+    "name": "muted on raised",
+    "kind": "text",
+    "bar": 4.5,
+    "ratio": 4.04,
+    "lc": -41.9,
+    "pass": false,
+    "text": "#94a3b8",
+    "bg": "#334155"
+  },
+  {
+    "name": "muted on canvas",
+    "kind": "text",
+    "bar": 4.5,
+    "ratio": 6.96,
+    "lc": -50.6,
+    "pass": true,
+    "text": "#94a3b8",
+    "bg": "#0f172a"
+  },
+  {
+    "name": "secondary text on canvas",
+    "kind": "text",
+    "bar": 4.5,
+    "ratio": 12.02,
+    "lc": -79.3,
+    "pass": true,
+    "text": "#cbd5e1",
+    "bg": "#0f172a"
+  },
+  {
+    "name": "primary text on canvas",
+    "kind": "text",
+    "bar": 4.5,
+    "ratio": 16.3,
+    "lc": -99.8,
+    "pass": true,
+    "text": "#f1f5f9",
+    "bg": "#0f172a"
+  },
+  {
+    "name": "violet on canvas, large title",
+    "kind": "large",
+    "bar": 3,
+    "ratio": 4.22,
+    "lc": -31.8,
+    "pass": true,
+    "text": "#8b5cf6",
+    "bg": "#0f172a"
+  },
+  {
+    "name": "violet on canvas, normal",
+    "kind": "text",
+    "bar": 4.5,
+    "ratio": 4.22,
+    "lc": -31.8,
+    "pass": false,
+    "text": "#8b5cf6",
+    "bg": "#0f172a"
+  },
+  {
+    "name": "green text on canvas",
+    "kind": "text",
+    "bar": 4.5,
+    "ratio": 7.04,
+    "lc": -51.8,
+    "pass": true,
+    "text": "#10b981",
+    "bg": "#0f172a"
+  },
+  {
+    "name": "error on canvas",
+    "kind": "text",
+    "bar": 4.5,
+    "ratio": 9.41,
+    "lc": -65.4,
+    "pass": true,
+    "text": "#fca5a5",
+    "bg": "#0f172a"
+  },
+  {
+    "name": "border on canvas",
+    "kind": "ui",
+    "bar": 3,
+    "ratio": 1.72,
+    "lc": -7.4,
+    "pass": false,
+    "text": "#334155",
+    "bg": "#0f172a"
+  },
+  {
+    "name": "border on surface",
+    "kind": "ui",
+    "bar": 3,
+    "ratio": 1.41,
+    "lc": 0,
+    "pass": false,
+    "text": "#334155",
+    "bg": "#1e293b"
+  },
+  {
+    "name": "high edge on raised",
+    "kind": "ui",
+    "bar": 3,
+    "ratio": 2.75,
+    "lc": -28,
+    "pass": false,
+    "text": "#ef4444",
+    "bg": "#334155"
+  },
+  {
+    "name": "medium edge on raised",
+    "kind": "ui",
+    "bar": 3,
+    "ratio": 4.82,
+    "lc": -50.6,
+    "pass": true,
+    "text": "#f59e0b",
+    "bg": "#334155"
+  },
+  {
+    "name": "low edge on raised",
+    "kind": "ui",
+    "bar": 3,
+    "ratio": 2.82,
+    "lc": -27.9,
+    "pass": false,
+    "text": "#3b82f6",
+    "bg": "#334155"
+  },
+  {
+    "name": "focus ring 10 percent over surface",
+    "kind": "ui",
+    "bar": 3,
+    "ratio": 1.17,
+    "lc": 0,
+    "pass": false,
+    "text": "#1d3742",
+    "bg": "#1e293b"
+  }
+]

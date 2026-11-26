@@ -1,0 +1,38 @@
+{
+  "$schema": "https://www.designtokens.org/schemas/2025.10/resolver.json",
+  "name": "Grow Assist",
+  "version": "2025.10",
+  "description": "Dark is the default because the stylesheet has no light theme. The light context overrides semantic colors. An empty dark context means the foundation colors stand.",
+  "sets": {
+    "foundation": {
+      "description": "Primitives, dark semantic colors, type roles, and component aliases.",
+      "sources": [
+        {
+          "$ref": "grow_assist.tokens.json"
+        }
+      ]
+    }
+  },
+  "modifiers": {
+    "colorScheme": {
+      "description": "Light and dark semantic color.",
+      "default": "dark",
+      "contexts": {
+        "dark": [],
+        "light": [
+          {
+            "$ref": "grow_assist.light.tokens.json"
+          }
+        ]
+      }
+    }
+  },
+  "resolutionOrder": [
+    {
+      "$ref": "#/sets/foundation"
+    },
+    {
+      "$ref": "#/modifiers/colorScheme"
+    }
+  ]
+}
