@@ -51,6 +51,7 @@ pub fn option_map_uses_atom_keys_for_hosted_ollama_test() {
     use key_matches <- decode.field("key_matches", decode.bool)
     use system_matches <- decode.field("system_matches", decode.bool)
     use user_matches <- decode.field("user_matches", decode.bool)
+    use max_tokens <- decode.field("max_tokens", decode.int)
     decode.success(#(
       keys,
       model,
@@ -60,6 +61,7 @@ pub fn option_map_uses_atom_keys_for_hosted_ollama_test() {
       key_matches,
       system_matches,
       user_matches,
+      max_tokens,
     ))
   }
   let assert Ok(#(
@@ -71,8 +73,10 @@ pub fn option_map_uses_atom_keys_for_hosted_ollama_test() {
     key_matches,
     system_matches,
     user_matches,
+    max_tokens,
   )) = decode.run(data, decoder)
   assert model == "inkling-2-small"
+  assert max_tokens == 4000
   assert provider == "openai"
   assert backend == "ollama"
   assert base_url == "https://ollama.com/v1"
@@ -119,4 +123,15 @@ pub fn a_raise_that_includes_the_key_is_redacted_test() {
 
 pub fn object_schema_compiles_test() {
   let assert Ok(_) = req_llm.schema_compiles()
+}
+
+pub fn length_finish_is_not_decoded_test() {
+  let truncated = "{\"summary\": \"The tent is too humid"
+  let assert Error(message) = req_llm.accept_model_text("length", truncated)
+  assert message == "model ran out of tokens"
+}
+
+pub fn empty_content_is_not_decoded_test() {
+  let assert Error(message) = req_llm.accept_model_text("stop", "  \n")
+  assert message == "model ran out of tokens"
 }

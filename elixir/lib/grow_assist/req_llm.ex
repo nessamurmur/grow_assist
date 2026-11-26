@@ -20,8 +20,12 @@ defmodule GrowAssist.ReqLlm do
   @model "inkling-2-small"
   @base_url "https://ollama.com/v1"
   @temperature 0.2
-  @max_tokens 1200
+  # inkling-2-small spends this budget on reasoning before the JSON.
+  # 1200 stopped a real analyze mid-object (finish_reason length). 4000
+  # finished that same prompt with finish_reason stop.
+  @max_tokens 4000
   @receive_timeout 60_000
+  @out_of_tokens "model ran out of tokens"
 
   @schema [
     summary: [type: :string, required: true],
@@ -67,8 +71,23 @@ defmodule GrowAssist.ReqLlm do
        "base_url" => opts.base_url,
        "key_matches" => opts.api_key == api_key,
        "system_matches" => opts.system_prompt == system,
-       "user_matches" => opts.user == user
+       "user_matches" => opts.user == user,
+       "max_tokens" => opts.max_tokens
      }}
+  end
+
+  @doc false
+  def accept_model_text(finish, text) when is_binary(finish) and is_binary(text) do
+    case classify_text(finish_reason(finish), text) do
+      {:ok, json} ->
+        case Jason.decode(json) do
+          {:ok, map} when is_map(map) -> {:ok, map}
+          _ -> {:error, "model JSON could not be decoded"}
+        end
+
+      {:error, :exhausted} ->
+        {:error, @out_of_tokens}
+    end
   end
 
   def raise_for_test do
@@ -156,6 +175,7 @@ defmodule GrowAssist.ReqLlm do
 
     case safe_generate_object(model, opts.user, req_opts) do
       {:ok, object} -> stringify(object)
+      {:error, :exhausted} -> raise @out_of_tokens
       {:error, _reason} -> json_mode(model, opts, req_opts)
     end
   end
@@ -163,9 +183,13 @@ defmodule GrowAssist.ReqLlm do
   defp safe_generate_object(model, user, req_opts) do
     case ReqLLM.generate_object(model, user, @schema, req_opts) do
       {:ok, response} ->
-        case ReqLLM.Response.object(response) do
-          nil -> {:error, :empty_object}
-          object -> {:ok, object}
+        if length_finish?(ReqLLM.Response.finish_reason(response)) do
+          {:error, :exhausted}
+        else
+          case ReqLLM.Response.object(response) do
+            nil -> {:error, :empty_object}
+            object -> {:ok, object}
+          end
         end
 
       {:error, reason} ->
@@ -187,9 +211,13 @@ defmodule GrowAssist.ReqLlm do
         {:ok, text} ->
           text
 
+        {:error, :exhausted} ->
+          raise @out_of_tokens
+
         {:error, _} ->
           case generate_text(model, prompt, req_opts) do
             {:ok, text} -> text
+            {:error, :exhausted} -> raise @out_of_tokens
             {:error, reason} -> raise public_error(inspect(reason, limit: 8, printable_limit: 300), opts.api_key)
           end
       end
@@ -205,14 +233,38 @@ defmodule GrowAssist.ReqLlm do
 
   defp generate_text(model, prompt, req_opts) do
     case ReqLLM.generate_text(model, prompt, req_opts) do
-      {:ok, response} -> {:ok, ReqLLM.Response.text(response) || ""}
-      {:error, reason} -> {:error, reason}
+      {:ok, response} ->
+        case classify_text(ReqLLM.Response.finish_reason(response), ReqLLM.Response.text(response) || "") do
+          {:ok, text} -> {:ok, text}
+          {:error, :exhausted} -> {:error, :exhausted}
+        end
+
+      {:error, reason} ->
+        {:error, reason}
     end
   rescue
     error -> {:error, error}
   catch
     kind, reason -> {:error, {kind, reason}}
   end
+
+  defp classify_text(finish, text) when is_binary(text) do
+    cond do
+      length_finish?(finish) -> {:error, :exhausted}
+      String.trim(text) == "" -> {:error, :exhausted}
+      true -> {:ok, String.trim(text)}
+    end
+  end
+
+  defp length_finish?(finish) when finish in [:length, "length", "max_tokens", "max_output_tokens"],
+    do: true
+
+  defp length_finish?(_finish), do: false
+
+  defp finish_reason("length"), do: :length
+  defp finish_reason("max_tokens"), do: :length
+  defp finish_reason("stop"), do: :stop
+  defp finish_reason(_finish), do: :stop
 
   defp decode_json_text(text) when is_binary(text) do
     trimmed = String.trim(text)

@@ -60,5 +60,11 @@ pub fn raise_for_test() -> Result(Dynamic, String)
 @external(erlang, "Elixir.GrowAssist.ReqLlm", "schema_compiles")
 pub fn schema_compiles() -> Result(String, String)
 
+@external(erlang, "Elixir.GrowAssist.ReqLlm", "accept_model_text")
+pub fn accept_model_text(
+  finish: String,
+  text: String,
+) -> Result(Dynamic, String)
+
 @external(erlang, "Elixir.GrowAssist.ReqLlm", "capture")
 fn external_capture(run: fn() -> a) -> #(a, String)
