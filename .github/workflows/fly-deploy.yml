@@ -1,9 +1,11 @@
 name: Fly Deploy
 
 on:
-  push:
-    branches:
-      - main
+  workflow_run:
+    workflows:
+      - CI
+    types:
+      - completed
 
 permissions:
   contents: read
@@ -15,10 +17,16 @@ concurrency:
 jobs:
   deploy:
     name: Deploy to Fly.io
+    if: >-
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.event == 'push' &&
+      github.event.workflow_run.head_branch == 'main'
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
 
       - name: Check for FLY_API_TOKEN
         id: fly_token
@@ -27,7 +35,7 @@ jobs:
         run: |
           if [ -z "$FLY_API_TOKEN" ]; then
             echo "present=false" >> "$GITHUB_OUTPUT"
-            echo "::notice title=Fly deploy skipped::FLY_API_TOKEN is not set. Add it as an Actions secret to deploy on push to main. Nothing was deployed."
+            echo "::notice title=Fly deploy skipped::FLY_API_TOKEN is not set. Add it as an Actions secret to deploy after CI succeeds on main. Nothing was deployed."
           else
             echo "present=true" >> "$GITHUB_OUTPUT"
           fi

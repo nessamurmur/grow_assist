@@ -81,6 +81,8 @@ The root tests call the ReqLLM wrapper. `scripts/check.sh` compiles that wrapper
 scripts/check.sh
 ```
 
+GitHub Actions runs that same command once for the root package, once for `shared/`, and once for `client/`. A separate job runs `mix format --check-formatted` and `mix hex.audit` in `elixir/`. The workflow does not set a provider key.
+
 `client/` is the JavaScript target and runs its tests on Node.
 
 The root tests are the mocked wrapper path. They do not call Ollama. They cover a raise becoming `Error(...)` without a process crash, an atom-key option map for hosted Ollama (`inkling-2-small` at `https://ollama.com/v1`), a mocked object decoding to the analysis type, and a canary key that must not appear in the captured server logs or the HTTP body. `shared/` qcheck covers the JSON decoder: arbitrary text decodes only when the summary, 2 or 3 recommendations, and product-link rules hold, and generated valid responses round-trip.
@@ -145,7 +147,7 @@ The script prints the JSON response, never the key, and exits non-zero unless th
 
 ## Live deploy
 
-The app is [https://grow-assist.fly.dev](https://grow-assist.fly.dev). `fly.toml` sets `primary_region = "yyz"`. Machines stop when idle and start on the next request, so give the first request time. Pushes to `main` deploy through [`.github/workflows/fly-deploy.yml`](../../../.github/workflows/fly-deploy.yml).
+The app is [https://grow-assist.fly.dev](https://grow-assist.fly.dev). `fly.toml` sets `primary_region = "yyz"`. Machines stop when idle and start on the next request, so give the first request time. Pushes to `main` run [`.github/workflows/ci.yml`](../../../.github/workflows/ci.yml). [`.github/workflows/fly-deploy.yml`](../../../.github/workflows/fly-deploy.yml) deploys that commit after the CI workflow succeeds, and it checks out the commit CI ran.
 
 ```sh
 curl -fsS -D - --retry 5 --retry-all-errors --max-time 90 \
@@ -162,4 +164,4 @@ GROW_ASSIST_OLLAMA_TEST_KEY=... scripts/live-check.sh https://grow-assist.fly.de
 
 Later M1 tickets extend this skill as features land. Add the new check in the same change as the feature, once that feature is in the tree.
 
-CSV upload, a settings screen for provider and model, and the GitHub Actions Gleam checks (NES-152) are not steps above yet.
+CSV upload and a settings screen for provider and model are not steps above yet.
