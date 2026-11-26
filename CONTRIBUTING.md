@@ -32,4 +32,4 @@ Squash merge.
 
 ### Releases and versioning
 
-No releases yet; deploys to Fly.io are covered by NES-158; versioning to be decided.
+Every merge to main deploys to Fly.io through [.github/workflows/fly-deploy.yml](.github/workflows/fly-deploy.yml). There is no versioning yet.

@@ -1,0 +1,47 @@
+name: Fly Deploy
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+concurrency:
+  group: fly-deploy
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    name: Deploy to Fly.io
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Check for FLY_API_TOKEN
+        id: fly_token
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+        run: |
+          if [ -z "$FLY_API_TOKEN" ]; then
+            echo "present=false" >> "$GITHUB_OUTPUT"
+            echo "::notice title=Fly deploy skipped::FLY_API_TOKEN is not set. Add it as an Actions secret to deploy on push to main. Nothing was deployed."
+          else
+            echo "present=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Set up flyctl
+        if: steps.fly_token.outputs.present == 'true'
+        uses: superfly/flyctl-actions/setup-flyctl@98172f70657cb3e15db199af139be99bd3e61200 # 2026-10-30
+        with:
+          version: "0.5.18"
+
+      - name: Deploy
+        if: steps.fly_token.outputs.present == 'true'
+        # flyctl deploy defaults --ha to true and creates a second Machine
+        # on the first deploy. That spare stays billable after it stops.
+        run: flyctl deploy --remote-only --ha=false
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
