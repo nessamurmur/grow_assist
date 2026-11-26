@@ -147,7 +147,7 @@ The script prints the JSON response, never the key, and exits non-zero unless th
 
 ## Live deploy
 
-The app is [https://grow-assist.fly.dev](https://grow-assist.fly.dev). `fly.toml` sets `primary_region = "yyz"`. Machines stop when idle and start on the next request, so give the first request time. Pushes to `main` run [`.github/workflows/ci.yml`](../../../.github/workflows/ci.yml). [`.github/workflows/fly-deploy.yml`](../../../.github/workflows/fly-deploy.yml) deploys that commit after the CI workflow succeeds, and it checks out the commit CI ran.
+The app is [https://grow-assist.fly.dev](https://grow-assist.fly.dev). `fly.toml` sets `primary_region = "yyz"`. Machines stop when idle and start on the next request, so give the first request time. Pushes to `main` run [`.github/workflows/ci.yml`](../../../.github/workflows/ci.yml). [`.github/workflows/fly-deploy.yml`](../../../.github/workflows/fly-deploy.yml) checks out the commit CI ran and deploys it when that commit is still the tip of main. Re-running CI for an older commit does not deploy.
 
 ```sh
 curl -fsS -D - --retry 5 --retry-all-errors --max-time 90 \

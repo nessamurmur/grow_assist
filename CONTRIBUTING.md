@@ -30,4 +30,4 @@ Squash merge.
 
 ### Releases and versioning
 
-Every merge to main runs CI. Fly.io deploys that commit through [.github/workflows/fly-deploy.yml](.github/workflows/fly-deploy.yml) only after CI succeeds on it. There is no versioning yet.
+Every merge to main runs CI. Fly.io deploys the latest commit on main through [.github/workflows/fly-deploy.yml](.github/workflows/fly-deploy.yml) only after CI succeeds on it. Re-running CI for an older commit does not deploy. There is no versioning yet.

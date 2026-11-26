@@ -27,7 +27,29 @@ jobs:
         with:
           ref: ${{ github.event.workflow_run.head_sha }}
 
+      - name: Confirm the commit is still the tip of main
+        id: tip
+        env:
+          HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          if [ -z "$HEAD_SHA" ]; then
+            echo "workflow_run head_sha is empty. Nothing was deployed." >&2
+            exit 1
+          fi
+          tip=$(git ls-remote origin refs/heads/main | awk 'NR==1 { print $1 }')
+          if [ -z "$tip" ]; then
+            echo "Could not read the tip of main. Nothing was deployed." >&2
+            exit 1
+          fi
+          if [ "$tip" != "$HEAD_SHA" ]; then
+            echo "current=false" >> "$GITHUB_OUTPUT"
+            echo "::notice title=Fly deploy skipped::$HEAD_SHA is not the tip of main. A newer commit's own CI will deploy it. Nothing was deployed."
+          else
+            echo "current=true" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Check for FLY_API_TOKEN
+        if: steps.tip.outputs.current == 'true'
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
         run: |
@@ -37,11 +59,13 @@ jobs:
           fi
 
       - name: Set up flyctl
+        if: steps.tip.outputs.current == 'true'
         uses: superfly/flyctl-actions/setup-flyctl@98172f70657cb3e15db199af139be99bd3e61200 # 2026-10-30
         with:
           version: "0.5.18"
 
       - name: Deploy
+        if: steps.tip.outputs.current == 'true'
         # flyctl deploy defaults --ha to true and creates a second Machine
         # on the first deploy. That spare stays billable after it stops.
         run: flyctl deploy --remote-only --ha=false

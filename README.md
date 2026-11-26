@@ -41,7 +41,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for the merge checks.
 
 ## Deploy
 
-Merges to `main` deploy to [Fly.io](https://fly.io) in Toronto (`yyz`) through [`.github/workflows/fly-deploy.yml`](.github/workflows/fly-deploy.yml) after CI succeeds on that commit. There is no versioning yet. The deploy job fails if the `FLY_API_TOKEN` Actions secret is missing.
+The latest commit on `main` deploys to [Fly.io](https://fly.io) in Toronto (`yyz`) through [`.github/workflows/fly-deploy.yml`](.github/workflows/fly-deploy.yml) after CI succeeds on it. Re-running CI for an older commit does not deploy. There is no versioning yet. The deploy job fails if the `FLY_API_TOKEN` Actions secret is missing.
 
 One `shared-cpu-1x` machine with 256 MB stops when it is idle and starts on the next request. The workflow deploys with `flyctl deploy --remote-only --ha=false`, because `flyctl deploy` otherwise creates a second machine on the first deploy, and both root filesystems stay billable after they stop. There is no volume, no database, and no server-side secret. API keys stay in the browser.
 
