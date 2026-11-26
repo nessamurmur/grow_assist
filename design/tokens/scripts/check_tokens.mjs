@@ -165,8 +165,7 @@ function cssValue(type, value) {
     const size = cssValue("dimension", value.fontSize);
     const leading = value.lineHeight;
     const fontWeight = value.fontWeight;
-    const tracking = cssValue("dimension", value.letterSpacing);
-    return `${fontWeight} ${size}/${leading} ${family}; letter-spacing: ${tracking}`;
+    return `${fontWeight} ${size}/${leading} ${family}`;
   }
   throw new Error(`no CSS for ${type}`);
 }
@@ -235,6 +234,9 @@ function themeCss(tree) {
     const value = resolveValue(token.$value, tree, path);
     const name = "--" + path.join("-");
     lines.push(`  ${name}: ${cssValue(type, value)};`);
+    if (type === "typography") {
+      lines.push(`  ${name}-letter-spacing: ${cssValue("dimension", value.letterSpacing)};`);
+    }
   });
   return `:root {\n${lines.join("\n")}\n}\n`;
 }
@@ -299,12 +301,21 @@ function stylesheetReport() {
   return rows;
 }
 
+function loadResolver() {
+  const resolver = readJson("grow_assist.resolver.json");
+  if (resolver.version !== "2025.10") throw new Error(`resolver version ${resolver.version}`);
+  const foundationRef = resolver.sets.foundation.sources[0].$ref;
+  const foundation = readJson(foundationRef);
+  const scheme = resolver.modifiers.colorScheme;
+  if (scheme.default !== "dark") throw new Error(`colorScheme default ${scheme.default}`);
+  if (scheme.contexts.dark.length !== 0) throw new Error("dark context should be empty");
+  const lightRef = scheme.contexts.light[0].$ref;
+  return { dark: foundation, light: merge(foundation, readJson(lightRef)) };
+}
+
 function main() {
   selfCheck();
-  const foundation = readJson("grow_assist.tokens.json");
-  const light = readJson("grow_assist.light.tokens.json");
-  const darkTree = foundation;
-  const lightTree = merge(foundation, light);
+  const { dark: darkTree, light: lightTree } = loadResolver();
   mkdirSync(buildDir, { recursive: true });
   writeFileSync(join(buildDir, "dark.css"), themeCss(darkTree));
   writeFileSync(join(buildDir, "light.css"), themeCss(lightTree));

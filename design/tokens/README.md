@@ -18,7 +18,7 @@ Dark is the default. The shipped stylesheet sets its palette on `:root` and has 
 
 Primitives use generic names such as `color.green.500` and `space.4`.
 
-Semantic tokens name the domain roles below. A semantic color is the role a grower sees, such as `semantic.color.priority.high.accent`.
+Semantic tokens name the domain roles below. A semantic color aliases a primitive, such as `semantic.color.priority.high.accent` pointing at `color.red.300`. Primitives that no semantic token references are the recorded stylesheet colors that failed a check, the blog font families, and the spacing, radius, and shadow scales.
 
 Component tokens alias those roles onto the parts of the current page, such as `component.recommendation.description`. The alias is deliberate. A later change can restyle one part without renaming the role.
 
@@ -450,4 +450,4 @@ node design/tokens/scripts/define_tokens.mjs
 node design/tokens/scripts/check_tokens.mjs
 ```
 
-`define_tokens.mjs` writes the three JSON files. `check_tokens.mjs` resolves aliases, writes `build/dark.css` and `build/light.css`, and exits 1 if a token pair misses its bar. Edit the script, not the JSON.
+`define_tokens.mjs` writes the three JSON files. `check_tokens.mjs` reads the resolver, loads the files it names, resolves aliases, writes `build/dark.css` and `build/light.css`, and exits 1 if a token pair misses its bar. A typography token becomes a `font` shorthand plus a sibling custom property for letter spacing, because one custom property cannot hold both. Edit the script, not the JSON. The dark border and the dark footer share `color.ink.muted`, so a border at that step can read as strongly as the footer.

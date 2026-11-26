@@ -4,334 +4,118 @@
     "color": {
       "shell": {
         "canvas": {
-          "$value": {
-            "colorSpace": "srgb",
-            "components": [
-              0.97255,
-              0.98039,
-              0.98824
-            ],
-            "hex": "#f8fafc"
-          },
-          "$description": "Light page canvas.",
-          "$type": "color"
+          "$value": "{primitive.color.slate.50}",
+          "$description": "Light page canvas."
         },
         "surface": {
-          "$value": {
-            "colorSpace": "srgb",
-            "components": [
-              1,
-              1,
-              1
-            ],
-            "hex": "#ffffff"
-          },
-          "$description": "Light section.",
-          "$type": "color"
+          "$value": "{primitive.color.white}",
+          "$description": "Light section."
         },
         "raised": {
-          "$value": {
-            "colorSpace": "srgb",
-            "components": [
-              0.9451,
-              0.96078,
-              0.97647
-            ],
-            "hex": "#f1f5f9"
-          },
-          "$description": "Light recommendation surface.",
-          "$type": "color"
+          "$value": "{primitive.color.slate.100}",
+          "$description": "Light recommendation surface."
         },
         "text": {
-          "$value": {
-            "colorSpace": "srgb",
-            "components": [
-              0.05882,
-              0.0902,
-              0.16471
-            ],
-            "hex": "#0f172a"
-          },
-          "$description": "Light primary text.",
-          "$type": "color"
+          "$value": "{primitive.color.slate.900}",
+          "$description": "Light primary text."
         },
         "textSecondary": {
-          "$value": {
-            "colorSpace": "srgb",
-            "components": [
-              0.2,
-              0.2549,
-              0.33333
-            ],
-            "hex": "#334155"
-          },
-          "$description": "Light secondary text.",
-          "$type": "color"
+          "$value": "{primitive.color.slate.700}",
+          "$description": "Light secondary text."
         },
         "muted": {
-          "$value": {
-            "colorSpace": "srgb",
-            "components": [
-              0.27843,
-              0.33333,
-              0.41176
-            ],
-            "hex": "#475569"
-          },
-          "$description": "Light muted text. Clears 4.5:1 on canvas, surface, and raised.",
-          "$type": "color"
+          "$value": "{primitive.color.slate.600}",
+          "$description": "Light muted text. Clears 4.5:1 on canvas, surface, and raised."
         },
         "border": {
-          "$value": {
-            "colorSpace": "srgb",
-            "components": [
-              0.39216,
-              0.4549,
-              0.5451
-            ],
-            "hex": "#64748b"
-          },
-          "$description": "Light border. #94a3b8 on white is about 2.6:1.",
-          "$type": "color"
+          "$value": "{primitive.color.slate.500}",
+          "$description": "Light border. #94a3b8 on white is about 2.6:1."
         }
       },
       "status": {
         "problem": {
-          "$value": {
-            "colorSpace": "srgb",
-            "components": [
-              0.6,
-              0.10588,
-              0.10588
-            ],
-            "hex": "#991b1b"
-          },
-          "$description": "Light problem text.",
-          "$type": "color"
+          "$value": "{primitive.color.red.800}",
+          "$description": "Light problem text."
         }
       },
       "priority": {
         "high": {
           "accent": {
-            "$value": {
-              "colorSpace": "srgb",
-              "components": [
-                0.86275,
-                0.14902,
-                0.14902
-              ],
-              "hex": "#dc2626"
-            },
-            "$description": "Light high edge.",
-            "$type": "color"
+            "$value": "{primitive.color.red.600}",
+            "$description": "Light high edge."
           },
           "badgeText": {
-            "$value": {
-              "colorSpace": "srgb",
-              "components": [
-                0.49804,
-                0.11373,
-                0.11373
-              ],
-              "hex": "#7f1d1d"
-            },
-            "$description": "Light high badge text.",
-            "$type": "color"
+            "$value": "{primitive.color.red.900}",
+            "$description": "Light high badge text."
           },
           "badgeSurface": {
-            "$value": {
-              "colorSpace": "srgb",
-              "components": [
-                0.99608,
-                0.88627,
-                0.88627
-              ],
-              "hex": "#fee2e2"
-            },
-            "$description": "Light high badge surface.",
-            "$type": "color"
+            "$value": "{primitive.color.wash.high}",
+            "$description": "Light high badge surface."
           }
         },
         "medium": {
           "accent": {
-            "$value": {
-              "colorSpace": "srgb",
-              "components": [
-                0.70588,
-                0.32549,
-                0.03529
-              ],
-              "hex": "#b45309"
-            },
-            "$description": "Light medium edge.",
-            "$type": "color"
+            "$value": "{primitive.color.amber.700}",
+            "$description": "Light medium edge."
           },
           "badgeText": {
-            "$value": {
-              "colorSpace": "srgb",
-              "components": [
-                0.47059,
-                0.20784,
-                0.05882
-              ],
-              "hex": "#78350f"
-            },
-            "$description": "Light medium badge text.",
-            "$type": "color"
+            "$value": "{primitive.color.amber.900}",
+            "$description": "Light medium badge text."
           },
           "badgeSurface": {
-            "$value": {
-              "colorSpace": "srgb",
-              "components": [
-                0.99608,
-                0.95294,
-                0.78039
-              ],
-              "hex": "#fef3c7"
-            },
-            "$description": "Light medium badge surface.",
-            "$type": "color"
+            "$value": "{primitive.color.wash.medium}",
+            "$description": "Light medium badge surface."
           }
         },
         "low": {
           "accent": {
-            "$value": {
-              "colorSpace": "srgb",
-              "components": [
-                0.1451,
-                0.38824,
-                0.92157
-              ],
-              "hex": "#2563eb"
-            },
-            "$description": "Light low edge.",
-            "$type": "color"
+            "$value": "{primitive.color.blue.600}",
+            "$description": "Light low edge."
           },
           "badgeText": {
-            "$value": {
-              "colorSpace": "srgb",
-              "components": [
-                0.11765,
-                0.22745,
-                0.54118
-              ],
-              "hex": "#1e3a8a"
-            },
-            "$description": "Light low badge text.",
-            "$type": "color"
+            "$value": "{primitive.color.blue.900}",
+            "$description": "Light low badge text."
           },
           "badgeSurface": {
-            "$value": {
-              "colorSpace": "srgb",
-              "components": [
-                0.85882,
-                0.91765,
-                0.99608
-              ],
-              "hex": "#dbeafe"
-            },
-            "$description": "Light low badge surface.",
-            "$type": "color"
+            "$value": "{primitive.color.wash.low}",
+            "$description": "Light low badge surface."
           }
         }
       },
       "stage": {
         "vpd": {
-          "$value": {
-            "colorSpace": "srgb",
-            "components": [
-              0.02353,
-              0.37255,
-              0.27451
-            ],
-            "hex": "#065f46"
-          },
-          "$description": "Light VPD text.",
-          "$type": "color"
+          "$value": "{primitive.color.green.800}",
+          "$description": "Light VPD text."
         },
         "selected": {
-          "$value": {
-            "colorSpace": "srgb",
-            "components": [
-              0.01569,
-              0.47059,
-              0.34118
-            ],
-            "hex": "#047857"
-          },
-          "$description": "Light selected stage border. #10b981 on white fails 3:1.",
-          "$type": "color"
+          "$value": "{primitive.color.green.700}",
+          "$description": "Light selected stage border. #10b981 on white fails 3:1."
         }
       },
       "summary": {
         "heading": {
-          "$value": {
-            "colorSpace": "srgb",
-            "components": [
-              0.02353,
-              0.37255,
-              0.27451
-            ],
-            "hex": "#065f46"
-          },
-          "$description": "Light summary heading.",
-          "$type": "color"
+          "$value": "{primitive.color.green.800}",
+          "$description": "Light summary heading."
         },
         "surface": {
-          "$value": {
-            "colorSpace": "srgb",
-            "components": [
-              0.81961,
-              0.98039,
-              0.89804
-            ],
-            "hex": "#d1fae5"
-          },
-          "$description": "Light summary surface. This is the unused CSS --primary-light.",
-          "$type": "color"
+          "$value": "{primitive.color.green.100}",
+          "$description": "Light summary surface. This is the unused CSS --primary-light."
         }
       },
       "productLink": {
         "price": {
-          "$value": {
-            "colorSpace": "srgb",
-            "components": [
-              0.02353,
-              0.37255,
-              0.27451
-            ],
-            "hex": "#065f46"
-          },
-          "$description": "Light price text.",
-          "$type": "color"
+          "$value": "{primitive.color.green.800}",
+          "$description": "Light price text."
         },
         "accent": {
-          "$value": {
-            "colorSpace": "srgb",
-            "components": [
-              0.01569,
-              0.47059,
-              0.34118
-            ],
-            "hex": "#047857"
-          },
-          "$description": "Light product border.",
-          "$type": "color"
+          "$value": "{primitive.color.green.700}",
+          "$description": "Light product border."
         }
       },
       "analyze": {
         "fill": {
-          "$value": {
-            "colorSpace": "srgb",
-            "components": [
-              0.01569,
-              0.47059,
-              0.34118
-            ],
-            "hex": "#047857"
-          },
-          "$description": "Light analyze fill. 5.48:1 against white, so the white label and the section both clear their bars.",
-          "$type": "color"
+          "$value": "{primitive.color.green.700}",
+          "$description": "Light analyze fill. 5.48:1 against white, so the white label and the section both clear their bars."
         },
         "text": {
           "$value": "{primitive.color.white}",
@@ -339,34 +123,22 @@
         }
       },
       "focus": {
-        "$value": {
-          "colorSpace": "srgb",
-          "components": [
-            0.01569,
-            0.47059,
-            0.34118
-          ],
-          "hex": "#047857"
-        },
-        "$description": "Light focus color. Proposal, same name as the dark focus token.",
-        "$type": "color"
+        "$value": "{primitive.color.green.700}",
+        "$description": "Light focus color. Proposal, same name as the dark focus token."
       }
     },
     "shadow": {
       "focus": {
         "$value": {
           "color": {
-            "$type": "color",
-            "$value": {
-              "colorSpace": "srgb",
-              "components": [
-                0.01569,
-                0.47059,
-                0.34118
-              ],
-              "hex": "#047857",
-              "alpha": 1
-            }
+            "colorSpace": "srgb",
+            "components": [
+              0.01569,
+              0.47059,
+              0.34118
+            ],
+            "hex": "#047857",
+            "alpha": 1
           },
           "offsetX": {
             "value": 0,

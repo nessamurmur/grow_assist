@@ -921,17 +921,14 @@
       "rest": {
         "$value": {
           "color": {
-            "$type": "color",
-            "$value": {
-              "colorSpace": "srgb",
-              "components": [
-                0,
-                0,
-                0
-              ],
-              "hex": "#000000",
-              "alpha": 0.3
-            }
+            "colorSpace": "srgb",
+            "components": [
+              0,
+              0,
+              0
+            ],
+            "hex": "#000000",
+            "alpha": 0.3
           },
           "offsetX": {
             "value": 0,
@@ -956,17 +953,14 @@
       "hover": {
         "$value": {
           "color": {
-            "$type": "color",
-            "$value": {
-              "colorSpace": "srgb",
-              "components": [
-                0,
-                0,
-                0
-              ],
-              "hex": "#000000",
-              "alpha": 0.3
-            }
+            "colorSpace": "srgb",
+            "components": [
+              0,
+              0,
+              0
+            ],
+            "hex": "#000000",
+            "alpha": 0.3
           },
           "offsetX": {
             "value": 0,
@@ -991,17 +985,14 @@
       "overlay": {
         "$value": {
           "color": {
-            "$type": "color",
-            "$value": {
-              "colorSpace": "srgb",
-              "components": [
-                0,
-                0,
-                0
-              ],
-              "hex": "#000000",
-              "alpha": 0.3
-            }
+            "colorSpace": "srgb",
+            "components": [
+              0,
+              0,
+              0
+            ],
+            "hex": "#000000",
+            "alpha": 0.3
           },
           "offsetX": {
             "value": 0,
@@ -1121,95 +1112,32 @@
       "shell": {
         "$description": "Proposal. shell.gleam is the view module. There is no Shell type. Confirm the name with NJ before code agents use it.",
         "canvas": {
-          "$value": {
-            "colorSpace": "srgb",
-            "components": [
-              0.05882,
-              0.0902,
-              0.16471
-            ],
-            "hex": "#0f172a"
-          },
-          "$description": "Page background. CSS --background.",
-          "$type": "color"
+          "$value": "{primitive.color.slate.900}",
+          "$description": "Page background. CSS --background."
         },
         "surface": {
-          "$value": {
-            "colorSpace": "srgb",
-            "components": [
-              0.11765,
-              0.16078,
-              0.23137
-            ],
-            "hex": "#1e293b"
-          },
-          "$description": "Section background. CSS --surface.",
-          "$type": "color"
+          "$value": "{primitive.color.slate.800}",
+          "$description": "Section background. CSS --surface."
         },
         "raised": {
-          "$value": {
-            "colorSpace": "srgb",
-            "components": [
-              0.2,
-              0.2549,
-              0.33333
-            ],
-            "hex": "#334155"
-          },
-          "$description": "Recommendation surface. CSS --surface-hover.",
-          "$type": "color"
+          "$value": "{primitive.color.slate.700}",
+          "$description": "Recommendation surface. CSS --surface-hover."
         },
         "text": {
-          "$value": {
-            "colorSpace": "srgb",
-            "components": [
-              0.9451,
-              0.96078,
-              0.97647
-            ],
-            "hex": "#f1f5f9"
-          },
-          "$description": "Primary text. CSS --text-primary.",
-          "$type": "color"
+          "$value": "{primitive.color.slate.100}",
+          "$description": "Primary text. CSS --text-primary."
         },
         "textSecondary": {
-          "$value": {
-            "colorSpace": "srgb",
-            "components": [
-              0.88627,
-              0.9098,
-              0.94118
-            ],
-            "hex": "#e2e8f0"
-          },
-          "$description": "Secondary text. Shifted from #cbd5e1 so recommendation descriptions clear APCA Lc 75 on the raised surface.",
-          "$type": "color"
+          "$value": "{primitive.color.slate.200}",
+          "$description": "Secondary text. Shifted from #cbd5e1 so recommendation descriptions clear APCA Lc 75 on the raised surface."
         },
         "muted": {
-          "$value": {
-            "colorSpace": "srgb",
-            "components": [
-              0.65882,
-              0.70196,
-              0.76863
-            ],
-            "hex": "#a8b3c4"
-          },
-          "$description": "Footer text. Shifted from #94a3b8 so it clears 4.5:1 on raised as well as on canvas.",
-          "$type": "color"
+          "$value": "{primitive.color.ink.muted}",
+          "$description": "Footer text. Shifted from #94a3b8 so it clears 4.5:1 on raised as well as on canvas."
         },
         "border": {
-          "$value": {
-            "colorSpace": "srgb",
-            "components": [
-              0.65882,
-              0.70196,
-              0.76863
-            ],
-            "hex": "#a8b3c4"
-          },
-          "$description": "Borders. CSS #334155 fails 3:1. #94a3b8 passes WCAG and is Lc -42 on raised, under the APCA UI bar of 45, so the border uses the muted ink.",
-          "$type": "color"
+          "$value": "{primitive.color.ink.muted}",
+          "$description": "Borders. CSS #334155 fails 3:1. #94a3b8 passes WCAG and is Lc -42 on raised, under the APCA UI bar of 45, so the border uses the muted ink. The border and the footer are the same ink, so a border can read as strongly as footer text."
         }
       },
       "status": {
@@ -1223,230 +1151,86 @@
           "$description": "Loading line. CSS --text-secondary, unchanged."
         },
         "problem": {
-          "$value": {
-            "colorSpace": "srgb",
-            "components": [
-              0.99608,
-              0.79216,
-              0.79216
-            ],
-            "hex": "#fecaca"
-          },
-          "$description": "Problem text. CSS #fca5a5 passes WCAG and is about Lc -65. #fecaca is the draft for body-size error text.",
-          "$type": "color"
+          "$value": "{primitive.color.red.200}",
+          "$description": "Problem text. CSS #fca5a5 passes WCAG and is about Lc -65. #fecaca is the draft for body-size error text."
         }
       },
       "priority": {
         "$description": "analysis.Priority: High, Medium, Low.",
         "high": {
           "accent": {
-            "$value": {
-              "colorSpace": "srgb",
-              "components": [
-                0.98824,
-                0.64706,
-                0.64706
-              ],
-              "hex": "#fca5a5"
-            },
-            "$description": "High priority edge.",
-            "$type": "color"
+            "$value": "{primitive.color.red.300}",
+            "$description": "High priority edge."
           },
           "badgeText": {
-            "$value": {
-              "colorSpace": "srgb",
-              "components": [
-                0.99608,
-                0.79216,
-                0.79216
-              ],
-              "hex": "#fecaca"
-            },
-            "$description": "High priority badge label.",
-            "$type": "color"
+            "$value": "{primitive.color.red.200}",
+            "$description": "High priority badge label."
           },
           "badgeSurface": {
-            "$value": {
-              "colorSpace": "srgb",
-              "components": [
-                0.24706,
-                0.11373,
-                0.14118
-              ],
-              "hex": "#3f1d24"
-            },
-            "$description": "High priority badge surface. CSS is rgba(239, 68, 68, 0.2) over #334155.",
-            "$type": "color"
+            "$value": "{primitive.color.ink.badgeHigh}",
+            "$description": "High priority badge surface. CSS is rgba(239, 68, 68, 0.2) over #334155."
           }
         },
         "medium": {
           "accent": {
-            "$value": {
-              "colorSpace": "srgb",
-              "components": [
-                0.96078,
-                0.61961,
-                0.04314
-              ],
-              "hex": "#f59e0b"
-            },
-            "$description": "Medium priority edge. Kept. 4.82:1 on #334155.",
-            "$type": "color"
+            "$value": "{primitive.color.amber.500}",
+            "$description": "Medium priority edge. Kept. 4.82:1 on #334155."
           },
           "badgeText": {
-            "$value": {
-              "colorSpace": "srgb",
-              "components": [
-                0.99216,
-                0.90196,
-                0.54118
-              ],
-              "hex": "#fde68a"
-            },
-            "$description": "Medium priority badge label. CSS #fcd34d.",
-            "$type": "color"
+            "$value": "{primitive.color.amber.200}",
+            "$description": "Medium priority badge label. CSS #fcd34d."
           },
           "badgeSurface": {
-            "$value": {
-              "colorSpace": "srgb",
-              "components": [
-                0.23137,
-                0.16471,
-                0.07843
-              ],
-              "hex": "#3b2a14"
-            },
-            "$description": "Medium priority badge surface.",
-            "$type": "color"
+            "$value": "{primitive.color.ink.badgeMedium}",
+            "$description": "Medium priority badge surface."
           }
         },
         "low": {
           "accent": {
-            "$value": {
-              "colorSpace": "srgb",
-              "components": [
-                0.57647,
-                0.77255,
-                0.99216
-              ],
-              "hex": "#93c5fd"
-            },
-            "$description": "Low priority edge.",
-            "$type": "color"
+            "$value": "{primitive.color.blue.300}",
+            "$description": "Low priority edge."
           },
           "badgeText": {
-            "$value": {
-              "colorSpace": "srgb",
-              "components": [
-                0.74902,
-                0.85882,
-                0.99608
-              ],
-              "hex": "#bfdbfe"
-            },
-            "$description": "Low priority badge label. CSS #93c5fd.",
-            "$type": "color"
+            "$value": "{primitive.color.blue.200}",
+            "$description": "Low priority badge label. CSS #93c5fd."
           },
           "badgeSurface": {
-            "$value": {
-              "colorSpace": "srgb",
-              "components": [
-                0.11765,
-                0.16471,
-                0.26667
-              ],
-              "hex": "#1e2a44"
-            },
-            "$description": "Low priority badge surface.",
-            "$type": "color"
+            "$value": "{primitive.color.ink.badgeLow}",
+            "$description": "Low priority badge surface."
           }
         }
       },
       "stage": {
         "$description": "shell.Stage: Seedling, Vegetation, Flowering. The three stages share one color. The stylesheet does not color them differently.",
         "vpd": {
-          "$value": {
-            "colorSpace": "srgb",
-            "components": [
-              0.43137,
-              0.90588,
-              0.71765
-            ],
-            "hex": "#6ee7b7"
-          },
-          "$description": "VPD line on a stage card. VPD is prompt language, not a Gleam type. CSS --primary as text is Lc -52 at 0.85rem.",
-          "$type": "color"
+          "$value": "{primitive.color.green.300}",
+          "$description": "VPD line on a stage card. VPD is prompt language, not a Gleam type. CSS --primary as text is Lc -52 at 0.85rem."
         },
         "selected": {
-          "$value": {
-            "colorSpace": "srgb",
-            "components": [
-              0.06275,
-              0.72549,
-              0.50588
-            ],
-            "hex": "#10b981"
-          },
-          "$description": "Selected stage border. CSS --primary. 7.04:1 on the canvas.",
-          "$type": "color"
+          "$value": "{primitive.color.green.500}",
+          "$description": "Selected stage border. CSS --primary. 7.04:1 on the canvas."
         }
       },
       "summary": {
         "$description": "AnalysisResponse summary.",
         "heading": {
-          "$value": {
-            "colorSpace": "srgb",
-            "components": [
-              0.6549,
-              0.95294,
-              0.81569
-            ],
-            "hex": "#a7f3d0"
-          },
-          "$description": "Summary heading. Lighter than the VPD line because the summary surface is lighter than the canvas.",
-          "$type": "color"
+          "$value": "{primitive.color.green.200}",
+          "$description": "Summary heading. Lighter than the VPD line because the summary surface is lighter than the canvas."
         },
         "surface": {
-          "$value": {
-            "colorSpace": "srgb",
-            "components": [
-              0.07059,
-              0.21176,
-              0.18431
-            ],
-            "hex": "#12362f"
-          },
-          "$description": "Summary surface. CSS is a 135deg gradient of 10% green and 10% violet over the canvas.",
-          "$type": "color"
+          "$value": "{primitive.color.ink.summary}",
+          "$description": "Summary surface. CSS is a 135deg gradient of 10% green and 10% violet over the canvas."
         }
       },
       "productLink": {
         "$description": "analysis.ProductLink.",
         "price": {
-          "$value": {
-            "colorSpace": "srgb",
-            "components": [
-              0.43137,
-              0.90588,
-              0.71765
-            ],
-            "hex": "#6ee7b7"
-          },
-          "$description": "price_range text.",
-          "$type": "color"
+          "$value": "{primitive.color.green.300}",
+          "$description": "price_range text."
         },
         "accent": {
-          "$value": {
-            "colorSpace": "srgb",
-            "components": [
-              0.06275,
-              0.72549,
-              0.50588
-            ],
-            "hex": "#10b981"
-          },
-          "$description": "Product block border. CSS --primary. Passes 3:1 on the canvas.",
-          "$type": "color"
+          "$value": "{primitive.color.green.500}",
+          "$description": "Product block border. CSS --primary. Passes 3:1 on the canvas."
         },
         "action": {
           "$value": "{semantic.color.analyze.fill}",
@@ -1456,17 +1240,8 @@
       "analyze": {
         "$description": "The AnalyzeClicked action.",
         "fill": {
-          "$value": {
-            "colorSpace": "srgb",
-            "components": [
-              0.43137,
-              0.90588,
-              0.71765
-            ],
-            "hex": "#6ee7b7"
-          },
-          "$description": "Dark analyze fill. A #047857 fill on the #1e293b section is 2.67:1, so the dark theme uses the light green and dark label instead of white on green.",
-          "$type": "color"
+          "$value": "{primitive.color.green.300}",
+          "$description": "Dark analyze fill. A #047857 fill on the #1e293b section is 2.67:1, so the dark theme uses the light green and dark label instead of white on green."
         },
         "text": {
           "$value": "{primitive.color.green.950}",
@@ -1474,34 +1249,22 @@
         }
       },
       "focus": {
-        "$value": {
-          "colorSpace": "srgb",
-          "components": [
-            0.06275,
-            0.72549,
-            0.50588
-          ],
-          "hex": "#10b981"
-        },
-        "$description": "Proposal. No domain term for the keyboard focus indicator. This is the CSS focus border color, which already passes 3:1. The 10% ring does not.",
-        "$type": "color"
+        "$value": "{primitive.color.green.500}",
+        "$description": "Proposal. No domain term for the keyboard focus indicator. This is the CSS focus border color, which already passes 3:1. The 10% ring does not."
       }
     },
     "shadow": {
       "focus": {
         "$value": {
           "color": {
-            "$type": "color",
-            "$value": {
-              "colorSpace": "srgb",
-              "components": [
-                0.06275,
-                0.72549,
-                0.50588
-              ],
-              "hex": "#10b981",
-              "alpha": 1
-            }
+            "colorSpace": "srgb",
+            "components": [
+              0.06275,
+              0.72549,
+              0.50588
+            ],
+            "hex": "#10b981",
+            "alpha": 1
           },
           "offsetX": {
             "value": 0,

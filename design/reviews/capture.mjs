@@ -1,12 +1,13 @@
 // Screenshots, axe, ARIA snapshots, and a keyboard walk.
-// Usage: node design/reviews/capture.mjs <label> <baseUrl>
+// Usage: node design/reviews/capture.mjs <label> <baseUrl> [states]
 // The label is "local" or "deployed". The URL is an argument so this file
-// does not store a host name.
+// does not store a host name. CAPTURE_MODULES is the package.json that
+// resolves playwright. CAPTURE_OUT is the screenshot directory.
 import { mkdirSync, writeFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import { join } from "node:path";
 
-const require = createRequire("/tmp/ui-review/package.json");
+const require = createRequire(process.env.CAPTURE_MODULES ?? "/tmp/ui-review/package.json");
 const { chromium } = require("playwright");
 const AxeBuilder = require("@axe-core/playwright").default;
 
@@ -17,7 +18,7 @@ if (!label || !baseUrl) {
   process.exit(1);
 }
 
-const outDir = "/opt/cursor/artifacts/ui";
+const outDir = process.env.CAPTURE_OUT ?? "/opt/cursor/artifacts/ui";
 mkdirSync(outDir, { recursive: true });
 
 const fixture = {
