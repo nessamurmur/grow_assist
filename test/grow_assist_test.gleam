@@ -35,6 +35,9 @@ pub fn home_page_returns_shell_test() {
   assert string.contains(does: html, contain: "/static/client.js")
   assert string.contains(does: html, contain: "Seedling")
   assert string.contains(does: html, contain: "Flowering")
+  assert string.contains(does: html, contain: "Analyze")
+  assert string.contains(does: html, contain: "API key")
+  assert string.contains(does: html, contain: "Readings")
 }
 
 pub fn unknown_path_is_not_found_test() {

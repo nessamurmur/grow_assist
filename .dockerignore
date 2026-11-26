@@ -2,3 +2,5 @@
 build
 **/build
 erl_crash.dump
+elixir/deps
+elixir/_build

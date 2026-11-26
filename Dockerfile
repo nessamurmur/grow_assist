@@ -4,13 +4,12 @@
 # The guide pins Gleam 1.8 and OTP 27. This app targets OTP 28 or 29, so both
 # stages use the OTP 29.1.1 Alpine image that ships with Gleam 1.19.2.
 #
-# Elixir, Hex, and rebar3 are installed only in the build stage. rebar3
-# compiles Erlang packages such as hpack_erl. Elixir and Hex are for req_llm,
-# which is not a dependency yet. The exported shipment contains no Elixir
-# modules, so the runtime stage stays a slim Erlang image and does not need
-# Elixir. When req_llm is added, the runtime image will need the Elixir
-# standard library as well, because those calls are not bundled into the
-# shipment.
+# Elixir, Hex, and rebar3 are installed in the build stage. rebar3 compiles
+# Erlang packages such as hpack_erl. Elixir compiles the ReqLLM wrapper.
+# The runtime stage stays Alpine Erlang and does not include mix, but it does
+# include the Elixir standard library: ReqLLM is Elixir and is not bundled
+# into the Gleam shipment. The browser bundle is built here too, because
+# priv/static/client.js is gitignored and a clean deploy would otherwise 404 it.
 
 FROM erlang:29.1.1.0-alpine AS build
 
@@ -42,7 +41,34 @@ RUN apk add --no-cache ca-certificates curl unzip \
   && rebar3 version
 
 COPY . /app/
-RUN cd /app && gleam export erlang-shipment
+
+# client.js has to exist before `gleam export erlang-shipment` packs priv/.
+# Lustre joins --outdir onto the client project root, so this path is relative.
+RUN cd /app/client \
+  && gleam run -m lustre/dev build --outdir=../priv/static --no-html \
+  && test -s /app/priv/static/client.js
+
+RUN cd /app/elixir \
+  && mix deps.get --only prod \
+  && MIX_ENV=prod mix compile
+
+# The shipment entrypoint puts /app/*/ebin on the code path. Each Elixir app
+# has to sit next to the Gleam apps, not inside a nested lib directory.
+RUN cd /app && gleam export erlang-shipment \
+  && elixir_lib=$(elixir -e 'IO.puts(:code.lib_dir(:elixir) |> Path.dirname())') \
+  && dest=/app/build/erlang-shipment \
+  && for app in elixir eex logger; do \
+       cp -a "$elixir_lib/$app" "$dest/$app"; \
+     done \
+  && for app in /app/elixir/_build/prod/lib/*; do \
+       name=$(basename "$app"); \
+       if [ ! -d "$dest/$name" ]; then \
+         cp -a "$app" "$dest/$name"; \
+       fi; \
+     done \
+  && test -f "$dest/elixir/ebin/Elixir.Application.beam" \
+  && test -f "$dest/grow_assist_req_llm/ebin/Elixir.GrowAssist.ReqLlm.beam" \
+  && test -f "$dest/req_llm/ebin/Elixir.ReqLLM.beam"
 
 FROM erlang:29.1.1.0-alpine
 
@@ -50,7 +76,8 @@ FROM erlang:29.1.1.0-alpine
 # this Alpine image those flags create the user in nogroup: busybox uses -g
 # for GECOS and -G for the login group. -S/-G is the same non-root system user.
 # The base image also ships rebar3 3.27.0. The server does not invoke it.
-# Elixir is not installed in this stage.
+# Elixir's compiler is not installed in this stage. The shipment lib copied
+# above includes the Elixir standard library and the compiled ReqLLM beams.
 RUN addgroup -S webapp && adduser -S -D -H -G webapp webapp
 
 USER webapp

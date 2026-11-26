@@ -15,7 +15,7 @@ Install Gleam, Erlang/OTP 28 or 29, Elixir, Hex, and rebar3. Put all five on `PA
 
 `rebar3` is required. `gleam build` in the repository root compiles `hpack_erl` (a Mist dependency) with it, and that build fails when `rebar3` is missing. The README Development section already says to install rebar3 and keep it on `PATH`.
 
-Elixir and Hex are required on a machine that builds the Docker image, and they are what the ReqLLM wrapper will use. The Gleam packages do not call Elixir yet. The runtime image does not include Elixir. Gleam downloads its own Hex packages; `mix local.hex` is the Elixir Hex client the Docker build stage installs.
+Elixir and Hex are required on a machine that builds the Docker image or runs the root package tests. The ReqLLM wrapper is Elixir. Gleam downloads its own Hex packages; `mix local.hex` is the Elixir Hex client the Docker build stage installs. The runtime image includes the Elixir standard library and the compiled wrapper, not the Elixir compiler.
 
 Versions below match the Dockerfile: Gleam 1.19.2, OTP 29.1.1, Elixir 1.20.5, rebar3 3.28.0. OTP 28 is also fine for the Gleam commands.
 
@@ -73,6 +73,14 @@ Expect Gleam 1.19.2, OTP 29, Elixir 1.20.5, rebar3 3.28.0, and a Hex version lin
 
 ## Format, test, and build
 
+Compile the ReqLLM wrapper before the root package tests. `gleam test` in the root calls that Elixir module, so its beams and the Elixir standard library have to be on the code path. `shared/` and `client/` do not.
+
+```sh
+scripts/compile-wrapper.sh
+elixir_lib=$(elixir -e 'IO.puts(:code.lib_dir(:elixir) |> Path.dirname())')
+export ERL_LIBS="$PWD/elixir/_build/dev/lib:$elixir_lib${ERL_LIBS:+:$ERL_LIBS}"
+```
+
 Run these three commands in the repository root, then in `shared/`, then in `client/`:
 
 ```sh
@@ -82,6 +90,8 @@ gleam build
 ```
 
 `client/` is the JavaScript target and runs its tests on Node.
+
+The root tests are the mocked wrapper path. They do not call Ollama. They cover a raise becoming `Error(...)` without a process crash, an atom-key option map for hosted Ollama (`inkling-2-small` at `https://ollama.com/v1`), a mocked object decoding to the analysis type, and a canary key that must not appear in the captured server logs or the HTTP body. `shared/` qcheck covers the JSON decoder: arbitrary text decodes only when the summary, 2 or 3 recommendations, and product-link rules hold, and generated valid responses round-trip.
 
 ## Client bundle
 
@@ -108,36 +118,56 @@ The server listens on `0.0.0.0` and port 8080, or on `PORT` when that variable i
 curl -fsS -D - "http://127.0.0.1:${PORT:-8080}/" -o /tmp/grow-assist.html
 ```
 
-Expect `HTTP/1.1 200` and an HTML document titled Grow Assist. `GET /` is the shell page. Paths under `/static` serve files from `priv/static`. Any other path is a 404, including `/analyze`. There is no analyze route.
+Expect `HTTP/1.1 200` and an HTML document titled Grow Assist. `GET /` is the shell page, with a growth stage, a readings box, an API key field, and an Analyze button. Paths under `/static` serve files from `priv/static`. `GET /analyze` is a 404. `POST /analyze` is the JSON analyze route.
 
 The HTML references `/static/client.js`. After the bundle step above, that path is served. Stop the server when you are done.
 
+A mocked analyze, without an Ollama key, is the root test `post_analyze_returns_a_recommendation_test`. It posts a stage, readings, and a key to the route with a stubbed wrapper. The canary test in the same file posts a distinctive key and checks that the key is absent from the response and from the logger output captured around the request.
+
 ## Docker image
 
-From the repository root, with Docker:
+From the repository root, with Docker. The image listens on port 8080.
 
 ```sh
 docker build -t grow-assist:local .
+docker run --rm -p 8080:8080 grow-assist:local
 ```
 
-This is the two-stage image from the Gleam Fly guide, with Elixir, Hex, and rebar3 in the build stage. The runtime stage is Alpine Erlang. The Dockerfile runs `gleam export erlang-shipment`. It does not build the Lustre bundle.
+This is the two-stage image from the Gleam Fly guide, with Elixir, Hex, and rebar3 in the build stage. The build stage compiles `client/`, so `/static/client.js` is in the image even from a clean checkout. It also compiles the ReqLLM wrapper. The runtime stage is Alpine Erlang plus the Elixir standard library and those compiled beams. It does not include mix.
 
-`priv/static/client.js` is gitignored and is not listed in `.dockerignore`. A clean checkout, which is what GitHub deploys, has no `client.js` in the image. A local `docker build` after the bundle step above includes the file you just wrote, because `COPY .` sends it and `gleam export erlang-shipment` packs it at `grow_assist/priv/static/client.js`. The page still references `/static/client.js`. Building that file inside the image is a later change.
+`priv/static/client.js` is gitignored. The Dockerfile builds it before `gleam export erlang-shipment`, which packs it at `grow_assist/priv/static/client.js`.
+
+Against that running container:
+
+```sh
+curl -fsS -D - http://127.0.0.1:8080/static/client.js -o /dev/null
+```
+
+Expect `HTTP/1.1 200`. Then open `http://127.0.0.1:8080/`, choose a stage, paste readings and a key, and press Analyze. A real recommendation needs `GROW_ASSIST_OLLAMA_TEST_KEY`:
+
+```sh
+GROW_ASSIST_OLLAMA_TEST_KEY=... scripts/live-check.sh http://127.0.0.1:8080
+```
+
+The script prints the JSON response, never the key, and exits non-zero unless the body has a summary, 2 or 3 recommendations, and at least one product link. The same command with `https://grow-assist.fly.dev` is the live user path after a deploy. There is no key in this environment, so that live call is for the person who holds the key.
 
 ## Live deploy
 
-The app is [https://grow-assist.fly.dev](https://grow-assist.fly.dev). `fly.toml` sets `primary_region = "yyz"`. Machines stop when idle and start on the next request, so give the first request time.
+The app is [https://grow-assist.fly.dev](https://grow-assist.fly.dev). `fly.toml` sets `primary_region = "yyz"`. Machines stop when idle and start on the next request, so give the first request time. Pushes to `main` deploy through [`.github/workflows/fly-deploy.yml`](../../../.github/workflows/fly-deploy.yml).
 
 ```sh
 curl -fsS -D - --retry 5 --retry-all-errors --max-time 90 \
   https://grow-assist.fly.dev/ -o /tmp/grow-assist-live.html
+curl -fsS -D - --retry 5 --retry-all-errors --max-time 90 \
+  https://grow-assist.fly.dev/static/client.js -o /dev/null
 fly status -a grow-assist
+GROW_ASSIST_OLLAMA_TEST_KEY=... scripts/live-check.sh https://grow-assist.fly.dev
 ```
 
-`fly status` needs a logged-in `fly` (or `flyctl`) that can read the `grow-assist` app. The machine should be in region `yyz`. Pushes to `main` deploy through [`.github/workflows/fly-deploy.yml`](../../../.github/workflows/fly-deploy.yml). That workflow skips until the `FLY_API_TOKEN` Actions secret is set.
+`fly status` needs a logged-in `fly` (or `flyctl`) that can read the `grow-assist` app. The machine should be in region `yyz`. `live-check.sh` is the live user path: one flowering analyze with a small readings sample. It does not print the key. The machine stays `shared-cpu-1x` with 256 MB unless an analyze run runs out of memory.
 
 ## Later M1 tickets
 
 Later M1 tickets extend this skill as features land. Add the new check in the same change as the feature, once that feature is in the tree.
 
-The ReqLLM wrapper, CSV upload, browser-held provider settings, the analyze page, the GitHub Actions Gleam checks (NES-152), and building `client.js` inside the Docker image are not steps above yet.
+CSV upload, a settings screen for provider and model, and the GitHub Actions Gleam checks (NES-152) are not steps above yet.

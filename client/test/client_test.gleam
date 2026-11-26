@@ -18,6 +18,8 @@ pub fn shell_view_renders_on_javascript_test() {
   assert string.contains(does: html, contain: "Seedling")
   assert string.contains(does: html, contain: "Vegetation")
   assert string.contains(does: html, contain: "Flowering")
+  assert string.contains(does: html, contain: "Analyze")
+  assert string.contains(does: html, contain: "API key")
 }
 
 pub fn client_module_starts_test() {
