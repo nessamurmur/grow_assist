@@ -73,7 +73,7 @@ Expect Gleam 1.19.2, OTP 29, Elixir 1.20.5, rebar3 3.28.0, and a Hex version lin
 
 ## Format, test, and build
 
-`scripts/check.sh` is the local gate. It checks the repository root, `shared/`, and `client/`. In each package it runs `gleam format --check`, `gleam build --warnings-as-errors`, `gleam test`, and glinter. It compares glinter's per-rule counts with `lint-baseline.json`. A count above the baseline fails the script. `scripts/check.sh --update-lint-baseline` writes a lower baseline and refuses to raise one.
+`scripts/check.sh` is the local gate. It checks the repository root, `shared/`, and `client/`. In each package it runs `gleam format --check`, `gleam build --warnings-as-errors`, `gleam test`, and glinter. A `gleam.toml` for any other package fails the script, including when you name one package. Each package it finds needs an entry in `lint-baseline.json`. `build/`, `_build/`, and `deps/` are ignored. It compares glinter's per-rule counts with `lint-baseline.json`. A count above the baseline fails the script. `scripts/check.sh --update-lint-baseline` writes a lower baseline and refuses to raise one.
 
 The root tests call the ReqLLM wrapper. `scripts/check.sh` compiles that wrapper and puts its beams and the Elixir standard library on `ERL_LIBS` before those tests. `shared/` and `client/` do not use the wrapper.
 

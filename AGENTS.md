@@ -23,6 +23,6 @@ Keys are bring-your-own. The browser holds the key and sends it on each request.
 
 ## How to prove work
 
-- Types and static checks: `scripts/check.sh` from the repository root. It runs `gleam format --check`, `gleam build --warnings-as-errors`, `gleam test`, and the glinter baseline for the root package, `shared/`, and `client/`.
+- Types and static checks: `scripts/check.sh` from the repository root. It runs `gleam format --check`, `gleam build --warnings-as-errors`, `gleam test`, and the glinter baseline for the root package, `shared/`, and `client/`. A `gleam.toml` for any other package fails the script. Each package it finds needs an entry in `lint-baseline.json`.
 - Property tests with qcheck where a property covers more than another hand-picked example.
 - End to end, as the user, on the running server.

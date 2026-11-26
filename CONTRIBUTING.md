@@ -6,7 +6,7 @@ The merge bot evaluates a pull request against this section. Every item below ha
 
 ### Required checks
 
-Run `scripts/check.sh` from the repository root. It checks the root package, `shared/`, and `client/`. In each package it runs `gleam format --check`, `gleam build --warnings-as-errors`, `gleam test`, and glinter.
+Run `scripts/check.sh` from the repository root. It checks the root package, `shared/`, and `client/`. In each package it runs `gleam format --check`, `gleam build --warnings-as-errors`, `gleam test`, and glinter. A `gleam.toml` for any other package fails the script, including when you name one package. Each package it finds needs an entry in `lint-baseline.json`. `build/`, `_build/`, and `deps/` are ignored.
 
 glinter counts are compared with `lint-baseline.json`. A higher total or a higher per-rule count fails the script. Do not raise a count in that file. When a change touches a file that already has a finding, fix a cheap finding in that file and run `scripts/check.sh --update-lint-baseline` in the same change. That command writes the lower counts and exits non-zero if a count would rise.
 
