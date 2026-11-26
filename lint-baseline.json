@@ -1,0 +1,26 @@
+{
+  "root": {
+    "total": 15,
+    "rules": {
+      "assert_ok_pattern": 1,
+      "stringly_typed_error": 8,
+      "thrown_away_error": 6
+    }
+  },
+  "shared": {
+    "total": 10,
+    "rules": {
+      "stringly_typed_error": 3,
+      "thrown_away_error": 3,
+      "unused_exports": 4
+    }
+  },
+  "client": {
+    "total": 4,
+    "rules": {
+      "assert_ok_pattern": 1,
+      "discarded_result": 1,
+      "thrown_away_error": 2
+    }
+  }
+}

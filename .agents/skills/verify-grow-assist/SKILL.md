@@ -5,7 +5,7 @@ description: Install Gleam, Erlang, Elixir, Hex, and rebar3, then format, test, 
 
 # Verify Grow Assist
 
-Run this on the branch you are about to open. Paste the `gleam format --check`, `gleam test`, and `gleam build` output for each package, plus a `curl` of the running server, into the pull request description. [Ready to merge](../../../CONTRIBUTING.md#ready-to-merge) is the merge bar.
+Run this on the branch you are about to open. Paste the `scripts/check.sh` output, plus a `curl` of the running server when the change has a user-visible result, into the pull request description. [Ready to merge](../../../CONTRIBUTING.md#ready-to-merge) is the merge bar.
 
 The commands below check the app as it exists today.
 
@@ -73,20 +73,12 @@ Expect Gleam 1.19.2, OTP 29, Elixir 1.20.5, rebar3 3.28.0, and a Hex version lin
 
 ## Format, test, and build
 
-Compile the ReqLLM wrapper before the root package tests. `gleam test` in the root calls that Elixir module, so its beams and the Elixir standard library have to be on the code path. `shared/` and `client/` do not.
+`scripts/check.sh` is the local gate. It checks the repository root, `shared/`, and `client/`. In each package it runs `gleam format --check`, `gleam build --warnings-as-errors`, `gleam test`, and glinter. It compares glinter's per-rule counts with `lint-baseline.json`. A count above the baseline fails the script. `scripts/check.sh --update-lint-baseline` writes a lower baseline and refuses to raise one.
+
+The root tests call the ReqLLM wrapper. `scripts/check.sh` compiles that wrapper and puts its beams and the Elixir standard library on `ERL_LIBS` before those tests. `shared/` and `client/` do not use the wrapper.
 
 ```sh
-scripts/compile-wrapper.sh
-elixir_lib=$(elixir -e 'IO.puts(:code.lib_dir(:elixir) |> Path.dirname())')
-export ERL_LIBS="$PWD/elixir/_build/dev/lib:$elixir_lib${ERL_LIBS:+:$ERL_LIBS}"
-```
-
-Run these three commands in the repository root, then in `shared/`, then in `client/`:
-
-```sh
-gleam format --check
-gleam test
-gleam build
+scripts/check.sh
 ```
 
 `client/` is the JavaScript target and runs its tests on Node.

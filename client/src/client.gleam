@@ -13,7 +13,7 @@ import lustre/effect.{type Effect}
 import shared/analysis_json
 import shared/shell
 
-pub fn main() {
+pub fn main() -> Nil {
   let app = lustre.application(init, update, shell.view)
   case lustre.start(app, "#app", Nil) {
     Ok(_) -> Nil

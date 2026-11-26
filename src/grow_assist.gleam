@@ -9,7 +9,7 @@ import grow_assist/router
 
 const default_port = 8080
 
-pub fn main() {
+pub fn main() -> Nil {
   wisp.configure_logger()
   let secret_key_base = wisp.random_string(64)
 

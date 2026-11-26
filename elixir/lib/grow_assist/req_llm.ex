@@ -251,7 +251,7 @@ defmodule GrowAssist.ReqLlm do
   end
 
   defp usable?(map) when is_map(map) do
-    case :"shared@analysis_json".decode_dynamic(map) do
+    case :shared@analysis_json.decode_dynamic(map) do
       {:ok, _} -> true
       _ -> false
     end
@@ -293,9 +293,14 @@ defmodule GrowAssist.ReqLlm do
 
         {:error, _} ->
           case generate_text(model, prompt, req_opts) do
-            {:ok, text} -> text
-            {:error, :exhausted} -> raise @out_of_tokens
-            {:error, reason} -> raise public_error(inspect(reason, limit: 8, printable_limit: 300), opts.api_key)
+            {:ok, text} ->
+              text
+
+            {:error, :exhausted} ->
+              raise @out_of_tokens
+
+            {:error, reason} ->
+              raise public_error(inspect(reason, limit: 8, printable_limit: 300), opts.api_key)
           end
       end
 
@@ -303,15 +308,16 @@ defmodule GrowAssist.ReqLlm do
   end
 
   defp json_format_opts(req_opts) do
-    Keyword.put(req_opts, :provider_options,
-      response_format: %{"type" => "json_object"}
-    )
+    Keyword.put(req_opts, :provider_options, response_format: %{"type" => "json_object"})
   end
 
   defp generate_text(model, prompt, req_opts) do
     case ReqLLM.generate_text(model, prompt, req_opts) do
       {:ok, response} ->
-        case classify_text(ReqLLM.Response.finish_reason(response), ReqLLM.Response.text(response) || "") do
+        case classify_text(
+               ReqLLM.Response.finish_reason(response),
+               ReqLLM.Response.text(response) || ""
+             ) do
           {:ok, text} -> {:ok, text}
           {:error, :exhausted} -> {:error, :exhausted}
         end
@@ -333,8 +339,9 @@ defmodule GrowAssist.ReqLlm do
     end
   end
 
-  defp length_finish?(finish) when finish in [:length, "length", "max_tokens", "max_output_tokens"],
-    do: true
+  defp length_finish?(finish)
+       when finish in [:length, "length", "max_tokens", "max_output_tokens"],
+       do: true
 
   defp length_finish?(_finish), do: false
 
