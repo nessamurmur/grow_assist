@@ -724,28 +724,6 @@
           ],
           "$description": "The body stack in priv/static/styles.css.",
           "$type": "fontFamily"
-        },
-        "brandSans": {
-          "$value": [
-            "Inter",
-            "-apple-system",
-            "BlinkMacSystemFont",
-            "Segoe UI",
-            "Roboto",
-            "sans-serif"
-          ],
-          "$description": "Proposal. The blog loads Inter. The shell does not. No semantic font references this token.",
-          "$type": "fontFamily"
-        },
-        "brandSerif": {
-          "$value": [
-            "Source Serif 4",
-            "Georgia",
-            "Times New Roman",
-            "serif"
-          ],
-          "$description": "Proposal. The blog uses Source Serif 4 for titles. The shell does not. No semantic font references this token.",
-          "$type": "fontFamily"
         }
       },
       "size": {
@@ -1579,7 +1557,7 @@
       }
     },
     "apiKey": {
-      "$description": "Proposal. Model.api_key is a field. There is no ApiKey type. The brief says this field should not stay central.",
+      "$description": "Proposal. Model.api_key is a field. There is no ApiKey type. The field stays on the path until the hosted agent ships, then moves to an advanced option.",
       "surface": {
         "$value": "{semantic.color.shell.canvas}",
         "$description": "API key field background."

@@ -18,11 +18,11 @@ Dark is the default. The shipped stylesheet sets its palette on `:root` and has 
 
 Primitives use generic names such as `color.green.500` and `space.4`.
 
-Semantic tokens name the domain roles below. A semantic color aliases a primitive, such as `semantic.color.priority.high.accent` pointing at `color.red.300`. Primitives that no semantic token references are the recorded stylesheet colors that failed a check, the blog font families, and the spacing, radius, and shadow scales.
+Semantic tokens name the domain roles below. A semantic color aliases a primitive, such as `semantic.color.priority.high.accent` pointing at `color.red.300`. Primitives that no semantic token references are the recorded stylesheet colors that failed a check, and the spacing, radius, and shadow scales.
 
 Component tokens alias those roles onto the parts of the current page, such as `component.recommendation.description`. The alias is deliberate. A later change can restyle one part without renaming the role.
 
-190 foundation tokens. 94 primitive, 45 semantic, 51 component. The light file has 27 overrides.
+188 foundation tokens. 92 primitive, 45 semantic, 51 component. The light file has 27 overrides.
 
 ## Domain terms
 
@@ -49,11 +49,10 @@ These names are not types. Confirm them before anyone generates app CSS from thi
 | --- | --- |
 | `shell` | The view lives in `shell.gleam`. There is no `Shell` type. Header and footer sit under `component.shell` for the same reason. |
 | `readings` | `readings` is a `String` field. There is no `Reading` type. |
-| `apiKey` | `api_key` is a `String` field. There is no key type. |
+| `apiKey` | `api_key` is a `String` field. There is no key type. The field stays on the path until the hosted agent in NES-155 ships, then moves to an advanced option. |
 | `analyze` | Named from the `AnalyzeClicked` message. The button is not a type. |
 | `focus` | The domain has no word for the keyboard indicator. |
-| `stage.vpd` | VPD is copy on the stage card and in `priv/system_prompt.txt`. It is not a type. |
-| `font.family.brandSans` and `font.family.brandSerif` | Recorded from the author's blog. No semantic font references them. |
+| `stage.vpd` | VPD is copy on the stage card and in `priv/system_prompt.txt`. It is not a type. The review treats it as a derived value. |
 
 ## Inventory
 
@@ -293,13 +292,9 @@ The header gradient from `#10b981` to `#8b5cf6`. Violet `#8b5cf6` and `#c4b5fd` 
 
 `#059669`, `#ef4444`, `#f87171`, `#3b82f6`, and `#60a5fa` are recorded because the stylesheet uses them. They fail the checks below, so semantic tokens point at the passing step instead.
 
-## The author's blog
+## Palette
 
-The blog sets Inter for body text and Source Serif 4 for titles, in a light theme and a dark theme. The light canvas is a warm paper and the dark canvas is a warm near-black. Body size is larger than 16px and the line height is about 1.75.
-
-Grow Assist differs. The body font is the system sans stack. There is no serif. The palette is slate, emerald, and violet, and it is dark only. Body line height is 1.6. There is no `color-scheme` declaration.
-
-The primitives `font.family.brandSans` and `font.family.brandSerif` record the blog families. No semantic font references them. This draft does not restyle Grow Assist to match the blog.
+NJ kept Grow Assist's dark slate and emerald palette, with the contrast fixes in this draft. The body font stays `primitive.font.family.system`. The title uses shell text. Violet `#8b5cf6` and `#c4b5fd` stay recorded primitives because the stylesheet gradient uses them. No semantic color references them. The running stylesheet is still dark only. Light is the resolver override for when a light theme ships.
 
 ## Contrast of the current stylesheet
 
@@ -339,6 +334,8 @@ White on `#10b981` is 2.54:1, and white on `#059669` is 3.77:1. The dark analyze
 `#ef4444` on `#334155` is 2.75:1. The dark high edge is `#fca5a5`. `#3b82f6` on `#334155` is 2.82:1. The dark low edge is `#93c5fd`. The medium edge `#f59e0b` already passes and stays.
 
 The 10% focus ring composites to 1.17:1. The draft uses a solid 3px ring in the focus color. Dark focus is `#10b981`. Light focus is `#047857`.
+
+That ring is scored on the canvas and on the surface. It is not scored on the analyze fill or on the selected stage border. Dark focus `#10b981` on the dark analyze fill `#6ee7b7` is 1.66:1. Light focus `#047857` is the same color as the light analyze fill and the light selected border, so that pair is 1:1. A ring in the focus color can disappear on those controls. Keep an outline that clears 3:1 against the control. Forced colors drop `box-shadow`, so the outline has to remain.
 
 Badge surfaces become solid colors. The stylesheet uses a 20% wash. Dark problem text moves from `#fca5a5` to `#fecaca` so the APCA body bar clears. `#fca5a5` already passes WCAG.
 

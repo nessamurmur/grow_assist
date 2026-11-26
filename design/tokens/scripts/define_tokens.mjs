@@ -158,16 +158,6 @@ const foundation = {
     font: {
       family: {
         system: tok("fontFamily", systemFamily, "The body stack in priv/static/styles.css."),
-        brandSans: tok(
-          "fontFamily",
-          ["Inter", "-apple-system", "BlinkMacSystemFont", "Segoe UI", "Roboto", "sans-serif"],
-          "Proposal. The blog loads Inter. The shell does not. No semantic font references this token.",
-        ),
-        brandSerif: tok(
-          "fontFamily",
-          ["Source Serif 4", "Georgia", "Times New Roman", "serif"],
-          "Proposal. The blog uses Source Serif 4 for titles. The shell does not. No semantic font references this token.",
-        ),
       },
       size: {
         "12": dim(0.75, "rem", "12px at a 16px root. Priority badge only."),
@@ -337,7 +327,7 @@ const foundation = {
       placeholder: alias("semantic.color.status.waiting", "Readings placeholder."),
     },
     apiKey: {
-      $description: "Proposal. Model.api_key is a field. There is no ApiKey type. The brief says this field should not stay central.",
+      $description: "Proposal. Model.api_key is a field. There is no ApiKey type. The field stays on the path until the hosted agent ships, then moves to an advanced option.",
       surface: alias("semantic.color.shell.canvas", "API key field background."),
       text: alias("semantic.color.shell.text", "API key text."),
       border: alias("semantic.color.shell.border", "API key border."),
