@@ -56,7 +56,7 @@ These names are not types. Confirm them before anyone generates app CSS from thi
 
 ## Inventory
 
-Every declaration in `priv/static/styles.css`. Counts are declarations, not selectors. A grouped selector is one declaration. A shorthand counts once for each distinct length in that declaration. `var()` is expanded through the `:root` custom properties, so a color counts at the custom property and again at each use. `font: inherit` and `font-family: inherit` stay in the font-family row. `color: inherit` on `button.stage-card` is the color row.
+Design values in `priv/static/styles.css`. Counts are declarations, not selectors. A grouped selector is one declaration. A shorthand counts once for each distinct length in that declaration. A bare `0` is not the same row as `0px`. `var()` is expanded through the `:root` custom properties, so a color counts at the custom property and again at each use. `font: inherit` and `font-family: inherit` stay in the font-family row. `color: inherit` on `button.stage-card` is the color row. Keywords that turn a property off, such as `border: none`, `outline: none`, and `appearance: none`, are not rows. An `outline` width is filed under border width.
 
 
 ### border-width
@@ -447,4 +447,4 @@ node design/tokens/scripts/define_tokens.mjs
 node design/tokens/scripts/check_tokens.mjs
 ```
 
-`define_tokens.mjs` writes the three JSON files. `check_tokens.mjs` reads the resolver, loads the files it names, resolves aliases, writes `build/dark.css` and `build/light.css`, and exits 1 if a token pair misses its bar. A typography token becomes a `font` shorthand plus a sibling custom property for letter spacing, because one custom property cannot hold both. Edit the script, not the JSON. The dark border and the dark footer share `color.ink.muted`, so a border at that step can read as strongly as the footer.
+`define_tokens.mjs` writes the three JSON files. `check_tokens.mjs` reads the resolver. It loads the one foundation file and the one light file the resolver names, resolves aliases, writes `build/dark.css` and `build/light.css`, and exits 1 if a token pair misses its bar or the resolver lists a different number of those files. It rewrites the proof CSS on every run, so a stale copy is replaced rather than reported. CI does not run these scripts. That stays true while the app does not import the tokens. A typography token becomes a `font` shorthand plus a sibling custom property for letter spacing, because one custom property cannot hold both. Edit the script, not the JSON. The dark border and the dark footer share `color.ink.muted`, so a border at that step can read as strongly as the footer.

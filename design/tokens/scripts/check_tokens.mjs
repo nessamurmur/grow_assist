@@ -158,7 +158,8 @@ function cssValue(type, value) {
   if (type === "cubicBezier") return `cubic-bezier(${value.join(", ")})`;
   if (type === "shadow") {
     const color = cssColor(value.color.$value ?? value.color);
-    return `${value.offsetX.value}px ${value.offsetY.value}px ${value.blur.value}px ${value.spread.value}px ${color}`;
+    const length = (part) => `${part.value}${part.unit}`;
+    return `${length(value.offsetX)} ${length(value.offsetY)} ${length(value.blur)} ${length(value.spread)} ${color}`;
   }
   if (type === "typography") {
     const family = cssValue("fontFamily", value.fontFamily);
@@ -304,12 +305,19 @@ function stylesheetReport() {
 function loadResolver() {
   const resolver = readJson("grow_assist.resolver.json");
   if (resolver.version !== "2025.10") throw new Error(`resolver version ${resolver.version}`);
-  const foundationRef = resolver.sets.foundation.sources[0].$ref;
-  const foundation = readJson(foundationRef);
+  const sources = resolver.sets.foundation.sources;
+  if (!Array.isArray(sources) || sources.length !== 1) {
+    throw new Error(`foundation sources ${sources?.length ?? 0}, expected 1`);
+  }
+  const foundation = readJson(sources[0].$ref);
   const scheme = resolver.modifiers.colorScheme;
   if (scheme.default !== "dark") throw new Error(`colorScheme default ${scheme.default}`);
   if (scheme.contexts.dark.length !== 0) throw new Error("dark context should be empty");
-  const lightRef = scheme.contexts.light[0].$ref;
+  const lightSources = scheme.contexts.light;
+  if (!Array.isArray(lightSources) || lightSources.length !== 1) {
+    throw new Error(`light context ${lightSources?.length ?? 0}, expected 1`);
+  }
+  const lightRef = lightSources[0].$ref;
   return { dark: foundation, light: merge(foundation, readJson(lightRef)) };
 }
 

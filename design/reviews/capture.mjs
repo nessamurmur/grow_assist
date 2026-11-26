@@ -1,20 +1,30 @@
-// Screenshots, axe, ARIA snapshots, and a keyboard walk.
+// One-off helper for the 26 November 2026 review. The app does not import it.
 // Usage: node design/reviews/capture.mjs <label> <baseUrl> [states]
 // The label is "local" or "deployed". The URL is an argument so this file
 // does not store a host name. CAPTURE_MODULES is the package.json that
-// resolves playwright. CAPTURE_OUT is the screenshot directory.
+// resolves playwright and @axe-core/playwright. CAPTURE_OUT is the directory
+// for screenshots and axe JSON. The default is outside this repository, and
+// those files are not committed.
 import { mkdirSync, writeFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import { join } from "node:path";
 
-const require = createRequire(process.env.CAPTURE_MODULES ?? "/tmp/ui-review/package.json");
-const { chromium } = require("playwright");
-const AxeBuilder = require("@axe-core/playwright").default;
-
 const [label, baseUrl, onlyArg] = process.argv.slice(2);
 const only = onlyArg ? onlyArg.split(",") : null;
 if (!label || !baseUrl) {
-  console.error("usage: node design/reviews/capture.mjs <label> <baseUrl>");
+  console.error("usage: node design/reviews/capture.mjs <label> <baseUrl> [states]");
+  process.exit(1);
+}
+
+let chromium;
+let AxeBuilder;
+try {
+  const require = createRequire(process.env.CAPTURE_MODULES ?? "/tmp/ui-review/package.json");
+  ({ chromium } = require("playwright"));
+  AxeBuilder = require("@axe-core/playwright").default;
+} catch (error) {
+  console.error("Set CAPTURE_MODULES to a package.json that resolves playwright and @axe-core/playwright.");
+  console.error(error.message);
   process.exit(1);
 }
 
@@ -275,6 +285,7 @@ async function main() {
   writeFileSync(file("axe-rows.json"), JSON.stringify(rows, null, 2));
   writeFileSync(file("capture-errors.json"), JSON.stringify(errors, null, 2));
   console.log("done", label, "errors", errors.length);
+  if (errors.length) process.exitCode = 1;
 }
 
 main();

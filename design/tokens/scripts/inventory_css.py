@@ -212,7 +212,7 @@ def main():
                 lengths = LENGTH_RE.findall(expanded)
                 if prop != "border-radius":
                     # Unitless 0 is a spacing value. Radius is recorded above.
-                    lengths += [token for token in re.findall(r"(?<![\d.])0(?![\d.])", expanded)]
+                    lengths += [token for token in re.findall(r"(?<![\d.])0(?![\d.a-zA-Z%])", expanded)]
                     seen = set()
                     for length in lengths:
                         if length in seen:
