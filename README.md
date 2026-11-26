@@ -43,7 +43,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for the merge checks.
 
 Merges to `main` deploy to [Fly.io](https://fly.io) in Toronto (`yyz`) through [`.github/workflows/fly-deploy.yml`](.github/workflows/fly-deploy.yml). There is no versioning yet. The workflow skips with a notice until the `FLY_API_TOKEN` Actions secret is set.
 
-One `shared-cpu-1x` machine with 256 MB stops when it is idle and starts on the next request. There is no volume, no database, and no server-side secret. API keys stay in the browser.
+One `shared-cpu-1x` machine with 256 MB stops when it is idle and starts on the next request. The workflow deploys with `flyctl deploy --remote-only --ha=false`, because `flyctl deploy` otherwise creates a second machine on the first deploy, and both root filesystems stay billable after they stop. There is no volume, no database, and no server-side secret. API keys stay in the browser.
 
 Create the app once, from this repository, without deploying. `fly.toml` is already committed, and its `primary_region` is `yyz`.
 

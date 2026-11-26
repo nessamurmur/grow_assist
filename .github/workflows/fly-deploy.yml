@@ -34,12 +34,14 @@ jobs:
 
       - name: Set up flyctl
         if: steps.fly_token.outputs.present == 'true'
-        uses: superfly/flyctl-actions/setup-flyctl@master
+        uses: superfly/flyctl-actions/setup-flyctl@98172f70657cb3e15db199af139be99bd3e61200 # 2026-10-30
         with:
           version: "0.5.18"
 
       - name: Deploy
         if: steps.fly_token.outputs.present == 'true'
-        run: flyctl deploy --remote-only
+        # flyctl deploy defaults --ha to true and creates a second Machine
+        # on the first deploy. That spare stays billable after it stops.
+        run: flyctl deploy --remote-only --ha=false
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
