@@ -23,7 +23,10 @@ Versions below match the Dockerfile: Gleam 1.19.2, OTP 29.1.1, Elixir 1.20.5, re
 
 Other systems can use another installer. The tools still have to end up on `PATH` at a compatible version. `unzip` is used for the Elixir archive.
 
+A checksum mismatch stops the block before that archive is unpacked or put on `PATH`.
+
 ```sh
+set -euo pipefail
 mkdir -p "$HOME/.local/bin"
 tmp=$(mktemp -d)
 
@@ -44,13 +47,16 @@ curl -fsSL -o "$tmp/elixir.zip" \
 echo "f424d6f0bb710a1d4898f2645d8ad6cab3f5eab8d71848c0dda2579d3a8e8a06  $tmp/elixir.zip" | sha256sum -c -
 unzip -q -o "$tmp/elixir.zip" -d "$HOME/.local/elixir"
 
-curl -fsSL -o "$HOME/.local/bin/rebar3" \
+curl -fsSL -o "$tmp/rebar3" \
   https://github.com/erlang/rebar3/releases/download/3.28.0/rebar3
-echo "5a28b1cca082d3b023ec0f5df9d9f9d52557036c6f2a21c1ffa11b93a984dd42  $HOME/.local/bin/rebar3" | sha256sum -c -
-chmod +x "$HOME/.local/bin/rebar3"
+echo "5a28b1cca082d3b023ec0f5df9d9f9d52557036c6f2a21c1ffa11b93a984dd42  $tmp/rebar3" | sha256sum -c -
+install -m 755 "$tmp/rebar3" "$HOME/.local/bin/rebar3"
 
 export PATH="$HOME/.local/OTP-29.1.1/bin:$HOME/.local/elixir/bin:$HOME/.local/bin:$PATH"
 mix local.hex --force
+set +e
+set +u
+set +o pipefail
 ```
 
 Confirm:
@@ -96,10 +102,10 @@ From the repository root:
 gleam run
 ```
 
-The server listens on `0.0.0.0:8080`. Set `PORT` to use another port. In another shell:
+The server listens on `0.0.0.0` and port 8080, or on `PORT` when that variable is set for `gleam run`. Export that same `PORT` in the probe shell. An unset `PORT` probes 8080.
 
 ```sh
-curl -fsS -D - http://127.0.0.1:8080/ -o /tmp/grow-assist.html
+curl -fsS -D - "http://127.0.0.1:${PORT:-8080}/" -o /tmp/grow-assist.html
 ```
 
 Expect `HTTP/1.1 200` and an HTML document titled Grow Assist. `GET /` is the shell page. Paths under `/static` serve files from `priv/static`. Any other path is a 404, including `/analyze`. There is no analyze route.
