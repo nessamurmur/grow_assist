@@ -234,12 +234,14 @@ const pairs = [
   ["border on canvas", "semantic.color.shell.border", "semantic.color.shell.canvas", 3, "ui"],
   ["border on surface", "semantic.color.shell.border", "semantic.color.shell.surface", 3, "ui"],
   ["border on raised", "semantic.color.shell.border", "semantic.color.shell.raised", 3, "ui"],
-  ["focus on canvas", "semantic.color.focus", "semantic.color.shell.canvas", 3, "ui"],
-  ["focus on surface", "semantic.color.focus", "semantic.color.shell.surface", 3, "ui"],
-  ["focus on raised", "semantic.color.focus", "semantic.color.shell.raised", 3, "ui"],
-  ["focus on stage surface", "semantic.color.focus", "component.stage.surface", 3, "ui"],
-  ["focus on readings surface", "semantic.color.focus", "component.readings.surface", 3, "ui"],
-  ["focus on analyze fill", "semantic.color.focus", "semantic.color.analyze.fill", 3, "ui"],
+  ["focus ring on shell canvas", "semantic.color.focus.ring", "semantic.color.shell.canvas", 3, "ui"],
+  ["focus ring on shell surface", "semantic.color.focus.ring", "semantic.color.shell.surface", 3, "ui"],
+  ["focus ring on shell raised", "semantic.color.focus.ring", "semantic.color.shell.raised", 3, "ui"],
+  ["focus ring on stage surface", "semantic.color.focus.ring", "component.stage.surface", 3, "ui"],
+  ["focus ring on readings surface", "semantic.color.focus.ring", "component.readings.surface", 3, "ui"],
+  ["focus ring on summary surface", "semantic.color.focus.ring", "semantic.color.summary.surface", 3, "ui"],
+  ["focus gap on analyze fill", "semantic.color.focus.gap", "semantic.color.analyze.fill", 3, "ui"],
+  ["focus gap on focus ring", "semantic.color.focus.gap", "semantic.color.focus.ring", 3, "ui"],
   ["selected stage on canvas", "semantic.color.stage.selected", "semantic.color.shell.canvas", 3, "ui"],
   ["high accent on raised", "semantic.color.priority.high.accent", "semantic.color.shell.raised", 3, "ui"],
   ["medium accent on raised", "semantic.color.priority.medium.accent", "semantic.color.shell.raised", 3, "ui"],
@@ -281,6 +283,37 @@ function contrastReport(theme, tree) {
     if (!row.pass) failed += 1;
     rows.push(row);
   }
+  return { rows, failed };
+}
+
+const focusBands = ["semantic.color.focus.gap", "semantic.color.focus.ring"];
+const focusSurfaces = [
+  ["shell canvas", "semantic.color.shell.canvas"],
+  ["shell surface", "semantic.color.shell.surface"],
+  ["shell raised", "semantic.color.shell.raised"],
+  ["stage surface", "component.stage.surface"],
+  ["readings surface", "component.readings.surface"],
+  ["summary surface", "semantic.color.summary.surface"],
+  ["analyze fill", "semantic.color.analyze.fill"],
+];
+
+function focusMatrix(theme, tree) {
+  const rows = [];
+  let failed = 0;
+  for (const [surfaceName, surfacePath] of focusSurfaces) {
+    const scored = focusBands.map((band) => {
+      const bandName = band.endsWith(".gap") ? "gap" : "ring";
+      const row = score(tree, `${bandName} on ${surfaceName}`, band, surfacePath, 3, "ui");
+      const adjacent = pairs.some((pair) => pair[1] === band && pair[2] === surfacePath);
+      return { ...row, theme, band: bandName, surface: surfaceName, adjacent };
+    });
+    const best = Math.max(...scored.map((row) => row.ratio));
+    if (best + 1e-9 < 3) failed += 1;
+    rows.push(...scored);
+  }
+  const between = score(tree, "gap on ring", focusBands[0], focusBands[1], 3, "ui");
+  if (!between.pass) failed += 1;
+  rows.push({ ...between, theme, band: "gap", surface: "focus ring", adjacent: true });
   return { rows, failed };
 }
 
@@ -405,7 +438,24 @@ function main() {
     "pair\tkind\tbar\tratio\tLc\tresult\ttext\tbackground\n" + currentBody + "\n",
   );
   console.log("stylesheet fails", current.filter((row) => !row.pass).length);
-  const failed = dark.failed + lightReport.failed;
+  const darkFocus = focusMatrix("dark", darkTree);
+  const lightFocus = focusMatrix("light", lightTree);
+  const focusRows = [...darkFocus.rows, ...lightFocus.rows];
+  writeFileSync(join(buildDir, "focus-contrast.json"), JSON.stringify(focusRows, null, 2) + "\n");
+  const focusBody = focusRows
+    .map((row) =>
+      [row.theme, row.band, row.surface, row.ratio.toFixed(2), row.lc.toFixed(1), row.pass ? "pass" : "fail", row.adjacent ? "adjacent" : "spare"].join(
+        "\t",
+      ),
+    )
+    .join("\n");
+  writeFileSync(
+    join(buildDir, "focus-contrast.tsv"),
+    "theme\tband\tsurface\tratio\tLc\tresult\trole\n" + focusBody + "\n",
+  );
+  const focusFailed = darkFocus.failed + lightFocus.failed;
+  console.log(`focus surfaces failed ${focusFailed}`);
+  const failed = dark.failed + lightReport.failed + focusFailed;
   console.log(`pairs ${rows.length}, failed ${failed}`);
   for (const row of rows.filter((row) => !row.pass)) {
     console.log(`FAIL ${row.theme} ${row.name} ${row.ratio} Lc ${row.lc} bar ${row.bar}`);

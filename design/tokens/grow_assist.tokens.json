@@ -1227,42 +1227,65 @@
         }
       },
       "focus": {
-        "$value": "{primitive.color.green.500}",
-        "$description": "Proposal. No domain term for the keyboard focus indicator. This is the CSS focus border color, which already passes 3:1. The 10% ring does not."
+        "$description": "The gap is the inner 2px and touches the analyze fill. The ring is the outer 3px and touches the shell, the stage card, the readings field, and the summary.",
+        "gap": {
+          "$value": "{primitive.color.green.950}",
+          "$description": "Dark inner band."
+        },
+        "ring": {
+          "$value": "{primitive.color.green.500}",
+          "$description": "Dark outer band."
+        }
       }
     },
     "shadow": {
       "focus": {
-        "$value": {
-          "color": {
-            "colorSpace": "srgb",
-            "components": [
-              0.06275,
-              0.72549,
-              0.50588
-            ],
-            "hex": "#10b981",
-            "alpha": 1
+        "gap": {
+          "$value": {
+            "color": "{semantic.color.focus.gap}",
+            "offsetX": {
+              "value": 0,
+              "unit": "px"
+            },
+            "offsetY": {
+              "value": 0,
+              "unit": "px"
+            },
+            "blur": {
+              "value": 0,
+              "unit": "px"
+            },
+            "spread": {
+              "value": 2,
+              "unit": "px"
+            }
           },
-          "offsetX": {
-            "value": 0,
-            "unit": "px"
-          },
-          "offsetY": {
-            "value": 0,
-            "unit": "px"
-          },
-          "blur": {
-            "value": 0,
-            "unit": "px"
-          },
-          "spread": {
-            "value": 3,
-            "unit": "px"
-          }
+          "$description": "Inner band.",
+          "$type": "shadow"
         },
-        "$description": "Solid 3px focus ring in the dark theme.",
-        "$type": "shadow"
+        "ring": {
+          "$value": {
+            "color": "{semantic.color.focus.ring}",
+            "offsetX": {
+              "value": 0,
+              "unit": "px"
+            },
+            "offsetY": {
+              "value": 0,
+              "unit": "px"
+            },
+            "blur": {
+              "value": 0,
+              "unit": "px"
+            },
+            "spread": {
+              "value": 5,
+              "unit": "px"
+            }
+          },
+          "$description": "Outer band.",
+          "$type": "shadow"
+        }
       }
     },
     "font": {
@@ -1590,14 +1613,22 @@
       }
     },
     "focus": {
-      "$description": "Proposal. No domain term.",
-      "color": {
-        "$value": "{semantic.color.focus}",
-        "$description": "Focus border and ring color."
+      "$description": "Paint the gap shadow, then the ring shadow, as box-shadow. Forced colors drop box-shadow, so also keep a 3px outline in the ring color. Under forced-colors, set that outline to Highlight.",
+      "gap": {
+        "$value": "{semantic.color.focus.gap}",
+        "$description": "Inner band."
       },
       "ring": {
-        "$value": "{semantic.shadow.focus}",
-        "$description": "Focus ring."
+        "$value": "{semantic.color.focus.ring}",
+        "$description": "Outer band. Also the outline color."
+      },
+      "gapShadow": {
+        "$value": "{semantic.shadow.focus.gap}",
+        "$description": "Inner band shadow."
+      },
+      "ringShadow": {
+        "$value": "{semantic.shadow.focus.ring}",
+        "$description": "Outer band shadow."
       }
     },
     "status": {

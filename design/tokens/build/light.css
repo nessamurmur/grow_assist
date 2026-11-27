@@ -119,8 +119,10 @@
   --semantic-color-productLink-action: #047857;
   --semantic-color-analyze-fill: #047857;
   --semantic-color-analyze-text: #ffffff;
-  --semantic-color-focus: #047857;
-  --semantic-shadow-focus: 0px 0px 0px 3px #047857;
+  --semantic-color-focus-gap: #ffffff;
+  --semantic-color-focus-ring: #047857;
+  --semantic-shadow-focus-gap: 0px 0px 0px 2px #ffffff;
+  --semantic-shadow-focus-ring: 0px 0px 0px 5px #047857;
   --semantic-font-display: 700 3rem/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
   --semantic-font-display-letter-spacing: 0px;
   --semantic-font-displayStacked: 700 2.5rem/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
@@ -177,8 +179,10 @@
   --component-analyze-text: #ffffff;
   --component-analyze-font: 600 1rem/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
   --component-analyze-font-letter-spacing: 0px;
-  --component-focus-color: #047857;
-  --component-focus-ring: 0px 0px 0px 3px #047857;
+  --component-focus-gap: #ffffff;
+  --component-focus-ring: #047857;
+  --component-focus-gapShadow: 0px 0px 0px 2px #ffffff;
+  --component-focus-ringShadow: 0px 0px 0px 5px #047857;
   --component-status-waiting: #334155;
   --component-status-loading: #334155;
   --component-status-problem: #991b1b;

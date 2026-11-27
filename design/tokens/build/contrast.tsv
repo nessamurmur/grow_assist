@@ -31,8 +31,14 @@ dark	tagline on canvas	text	4.5	14.48	-91.4	pass
 dark	border on canvas	ui	3	8.42	-59.6	pass
 dark	border on surface	ui	3	6.90	-57.1	pass
 dark	border on raised	ui	3	4.89	-50.8	pass
-dark	focus on canvas	ui	3	7.04	-51.8	pass
-dark	focus on surface	ui	3	5.77	-49.3	pass
+dark	focus ring on shell canvas	ui	3	7.04	-51.8	pass
+dark	focus ring on shell surface	ui	3	5.77	-49.3	pass
+dark	focus ring on shell raised	ui	3	4.08	-43.0	pass
+dark	focus ring on stage surface	ui	3	7.04	-51.8	pass
+dark	focus ring on readings surface	ui	3	7.04	-51.8	pass
+dark	focus ring on summary surface	ui	3	5.19	-47.6	pass
+dark	focus gap on analyze fill	ui	3	9.94	75.4	pass
+dark	focus gap on focus ring	ui	3	5.97	50.7	pass
 dark	selected stage on canvas	ui	3	7.04	-51.8	pass
 dark	high accent on raised	ui	3	5.46	-56.7	pass
 dark	medium accent on raised	ui	3	4.82	-50.6	pass
@@ -71,8 +77,14 @@ light	tagline on canvas	text	4.5	9.90	90.9	pass
 light	border on canvas	ui	3	4.55	69.9	pass
 light	border on surface	ui	3	4.76	73.0	pass
 light	border on raised	ui	3	4.34	66.7	pass
-light	focus on canvas	ui	3	5.24	73.7	pass
-light	focus on surface	ui	3	5.48	76.8	pass
+light	focus ring on shell canvas	ui	3	5.24	73.7	pass
+light	focus ring on shell surface	ui	3	5.48	76.8	pass
+light	focus ring on shell raised	ui	3	5.01	70.5	pass
+light	focus ring on stage surface	ui	3	5.24	73.7	pass
+light	focus ring on readings surface	ui	3	5.24	73.7	pass
+light	focus ring on summary surface	ui	3	4.84	68.3	pass
+light	focus gap on analyze fill	ui	3	5.48	-82.2	pass
+light	focus gap on focus ring	ui	3	5.48	-82.2	pass
 light	selected stage on canvas	ui	3	5.24	73.7	pass
 light	high accent on raised	ui	3	4.41	65.3	pass
 light	medium accent on raised	ui	3	4.58	67.7	pass

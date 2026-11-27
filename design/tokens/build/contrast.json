@@ -289,7 +289,7 @@
   },
   {
     "theme": "dark",
-    "name": "focus on canvas",
+    "name": "focus ring on shell canvas",
     "kind": "ui",
     "bar": 3,
     "ratio": 7.04,
@@ -298,11 +298,65 @@
   },
   {
     "theme": "dark",
-    "name": "focus on surface",
+    "name": "focus ring on shell surface",
     "kind": "ui",
     "bar": 3,
     "ratio": 5.77,
     "lc": -49.3,
+    "pass": true
+  },
+  {
+    "theme": "dark",
+    "name": "focus ring on shell raised",
+    "kind": "ui",
+    "bar": 3,
+    "ratio": 4.08,
+    "lc": -43,
+    "pass": true
+  },
+  {
+    "theme": "dark",
+    "name": "focus ring on stage surface",
+    "kind": "ui",
+    "bar": 3,
+    "ratio": 7.04,
+    "lc": -51.8,
+    "pass": true
+  },
+  {
+    "theme": "dark",
+    "name": "focus ring on readings surface",
+    "kind": "ui",
+    "bar": 3,
+    "ratio": 7.04,
+    "lc": -51.8,
+    "pass": true
+  },
+  {
+    "theme": "dark",
+    "name": "focus ring on summary surface",
+    "kind": "ui",
+    "bar": 3,
+    "ratio": 5.19,
+    "lc": -47.6,
+    "pass": true
+  },
+  {
+    "theme": "dark",
+    "name": "focus gap on analyze fill",
+    "kind": "ui",
+    "bar": 3,
+    "ratio": 9.94,
+    "lc": 75.4,
+    "pass": true
+  },
+  {
+    "theme": "dark",
+    "name": "focus gap on focus ring",
+    "kind": "ui",
+    "bar": 3,
+    "ratio": 5.97,
+    "lc": 50.7,
     "pass": true
   },
   {
@@ -649,7 +703,7 @@
   },
   {
     "theme": "light",
-    "name": "focus on canvas",
+    "name": "focus ring on shell canvas",
     "kind": "ui",
     "bar": 3,
     "ratio": 5.24,
@@ -658,11 +712,65 @@
   },
   {
     "theme": "light",
-    "name": "focus on surface",
+    "name": "focus ring on shell surface",
     "kind": "ui",
     "bar": 3,
     "ratio": 5.48,
     "lc": 76.8,
+    "pass": true
+  },
+  {
+    "theme": "light",
+    "name": "focus ring on shell raised",
+    "kind": "ui",
+    "bar": 3,
+    "ratio": 5.01,
+    "lc": 70.5,
+    "pass": true
+  },
+  {
+    "theme": "light",
+    "name": "focus ring on stage surface",
+    "kind": "ui",
+    "bar": 3,
+    "ratio": 5.24,
+    "lc": 73.7,
+    "pass": true
+  },
+  {
+    "theme": "light",
+    "name": "focus ring on readings surface",
+    "kind": "ui",
+    "bar": 3,
+    "ratio": 5.24,
+    "lc": 73.7,
+    "pass": true
+  },
+  {
+    "theme": "light",
+    "name": "focus ring on summary surface",
+    "kind": "ui",
+    "bar": 3,
+    "ratio": 4.84,
+    "lc": 68.3,
+    "pass": true
+  },
+  {
+    "theme": "light",
+    "name": "focus gap on analyze fill",
+    "kind": "ui",
+    "bar": 3,
+    "ratio": 5.48,
+    "lc": -82.2,
+    "pass": true
+  },
+  {
+    "theme": "light",
+    "name": "focus gap on focus ring",
+    "kind": "ui",
+    "bar": 3,
+    "ratio": 5.48,
+    "lc": -82.2,
     "pass": true
   },
   {
