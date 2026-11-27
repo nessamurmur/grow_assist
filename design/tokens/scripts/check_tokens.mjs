@@ -176,13 +176,29 @@ function hexToRgb(hex) {
   return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
 }
 
-function resolvedColor(tree, path) {
+function resolvedPaint(tree, path) {
   const token = lookup(tree, path);
   const type = tokenType(token, tree, [path]);
   if (type !== "color") throw new Error(`${path} is ${type}`);
   const value = resolveValue(token.$value, tree, [path]);
   if (!value.hex) throw new Error(`${path} has no hex`);
-  return hexToRgb(value.hex);
+  const alpha = value.alpha === undefined ? 1 : value.alpha;
+  return { rgb: hexToRgb(value.hex), alpha };
+}
+
+function paintOver(paint, bgRgb) {
+  if (paint.alpha >= 1) return paint.rgb;
+  return composite(paint.rgb, paint.alpha, bgRgb);
+}
+
+function backdrop(tree, path, paint) {
+  if (paint.alpha >= 1) return paint.rgb;
+  if (path === "semantic.color.shell.canvas") {
+    throw new Error(`${path} alpha ${paint.alpha} has no declared background`);
+  }
+  const canvas = resolvedPaint(tree, "semantic.color.shell.canvas");
+  if (canvas.alpha < 1) throw new Error("semantic.color.shell.canvas alpha has no declared background");
+  return composite(paint.rgb, paint.alpha, canvas.rgb);
 }
 
 const pairs = [
@@ -220,6 +236,10 @@ const pairs = [
   ["border on raised", "semantic.color.shell.border", "semantic.color.shell.raised", 3, "ui"],
   ["focus on canvas", "semantic.color.focus", "semantic.color.shell.canvas", 3, "ui"],
   ["focus on surface", "semantic.color.focus", "semantic.color.shell.surface", 3, "ui"],
+  ["focus on raised", "semantic.color.focus", "semantic.color.shell.raised", 3, "ui"],
+  ["focus on stage surface", "semantic.color.focus", "component.stage.surface", 3, "ui"],
+  ["focus on readings surface", "semantic.color.focus", "component.readings.surface", 3, "ui"],
+  ["focus on analyze fill", "semantic.color.focus", "semantic.color.analyze.fill", 3, "ui"],
   ["selected stage on canvas", "semantic.color.stage.selected", "semantic.color.shell.canvas", 3, "ui"],
   ["high accent on raised", "semantic.color.priority.high.accent", "semantic.color.shell.raised", 3, "ui"],
   ["medium accent on raised", "semantic.color.priority.medium.accent", "semantic.color.shell.raised", 3, "ui"],
@@ -242,19 +262,55 @@ function themeCss(tree) {
   return `:root {\n${lines.join("\n")}\n}\n`;
 }
 
+function score(tree, name, textPath, bgPath, bar, kind) {
+  const text = resolvedPaint(tree, textPath);
+  const bg = resolvedPaint(tree, bgPath);
+  const bgRgb = backdrop(tree, bgPath, bg);
+  const textRgb = paintOver(text, bgRgb);
+  const ratio = wcag(textRgb, bgRgb);
+  const lc = apca(textRgb, bgRgb);
+  const pass = ratio + 1e-9 >= bar;
+  return { name, kind, bar, ratio: Number(ratio.toFixed(2)), lc: Number(lc.toFixed(1)), pass };
+}
+
 function contrastReport(theme, tree) {
   const rows = [];
   let failed = 0;
   for (const [name, textPath, bgPath, bar, kind] of pairs) {
-    const text = resolvedColor(tree, textPath);
-    const bg = resolvedColor(tree, bgPath);
-    const ratio = wcag(text, bg);
-    const lc = apca(text, bg);
-    const pass = ratio + 1e-9 >= bar;
-    if (!pass) failed += 1;
-    rows.push({ theme, name, kind, bar, ratio: Number(ratio.toFixed(2)), lc: Number(lc.toFixed(1)), pass });
+    const row = { theme, ...score(tree, name, textPath, bgPath, bar, kind) };
+    if (!row.pass) failed += 1;
+    rows.push(row);
   }
   return { rows, failed };
+}
+
+function proveAlphaComposite(tree) {
+  const copy = clone(tree);
+  const ink = lookup(copy, "primitive.color.slate.100");
+  ink.$value = { ...ink.$value, alpha: 0 };
+  const row = score(copy, "probe", "semantic.color.shell.text", "semantic.color.shell.canvas", 4.5, "text");
+  if (row.pass || row.ratio > 1.01) {
+    throw new Error(`alpha 0 shell text on canvas scored ${row.ratio} pass ${row.pass}`);
+  }
+}
+
+function requireDeclaredBackground(tree) {
+  const used = new Set();
+  for (const row of pairs) {
+    used.add(row[1]);
+    used.add(row[2]);
+  }
+  const missing = [];
+  walk(lookup(tree, "semantic.color"), ["semantic", "color"], (path, token) => {
+    if (tokenType(token, tree, path) !== "color") return;
+    const value = resolveValue(token.$value, tree, path);
+    if (!value || value.alpha === undefined || value.alpha >= 1) return;
+    const id = path.join(".");
+    if (!used.has(id)) missing.push(id);
+  });
+  if (missing.length) {
+    throw new Error(`translucent semantic color has no declared background: ${missing.join(", ")}`);
+  }
 }
 
 const stylesheetPairs = [
@@ -324,6 +380,9 @@ function loadResolver() {
 function main() {
   selfCheck();
   const { dark: darkTree, light: lightTree } = loadResolver();
+  proveAlphaComposite(darkTree);
+  requireDeclaredBackground(darkTree);
+  requireDeclaredBackground(lightTree);
   mkdirSync(buildDir, { recursive: true });
   writeFileSync(join(buildDir, "dark.css"), themeCss(darkTree));
   writeFileSync(join(buildDir, "light.css"), themeCss(lightTree));
