@@ -1,0 +1,165 @@
+{
+  "$description": "Light theme semantic colors. Anything not listed inherits the dark foundation through the resolver.",
+  "semantic": {
+    "color": {
+      "shell": {
+        "canvas": {
+          "$value": "{primitive.color.slate.50}",
+          "$description": "Light page canvas."
+        },
+        "surface": {
+          "$value": "{primitive.color.white}",
+          "$description": "Light section."
+        },
+        "raised": {
+          "$value": "{primitive.color.slate.100}",
+          "$description": "Light recommendation surface."
+        },
+        "text": {
+          "$value": "{primitive.color.slate.900}",
+          "$description": "Light primary text."
+        },
+        "textSecondary": {
+          "$value": "{primitive.color.slate.700}",
+          "$description": "Light secondary text."
+        },
+        "muted": {
+          "$value": "{primitive.color.slate.600}",
+          "$description": "Light muted text. Clears 4.5:1 on canvas, surface, and raised."
+        },
+        "border": {
+          "$value": "{primitive.color.slate.500}",
+          "$description": "Light border. #94a3b8 on white is about 2.6:1."
+        }
+      },
+      "status": {
+        "problem": {
+          "$value": "{primitive.color.red.800}",
+          "$description": "Light problem text."
+        }
+      },
+      "priority": {
+        "high": {
+          "accent": {
+            "$value": "{primitive.color.red.600}",
+            "$description": "Light high edge."
+          },
+          "badgeText": {
+            "$value": "{primitive.color.red.900}",
+            "$description": "Light high badge text."
+          },
+          "badgeSurface": {
+            "$value": "{primitive.color.wash.high}",
+            "$description": "Light high badge surface."
+          }
+        },
+        "medium": {
+          "accent": {
+            "$value": "{primitive.color.amber.700}",
+            "$description": "Light medium edge."
+          },
+          "badgeText": {
+            "$value": "{primitive.color.amber.900}",
+            "$description": "Light medium badge text."
+          },
+          "badgeSurface": {
+            "$value": "{primitive.color.wash.medium}",
+            "$description": "Light medium badge surface."
+          }
+        },
+        "low": {
+          "accent": {
+            "$value": "{primitive.color.blue.600}",
+            "$description": "Light low edge."
+          },
+          "badgeText": {
+            "$value": "{primitive.color.blue.900}",
+            "$description": "Light low badge text."
+          },
+          "badgeSurface": {
+            "$value": "{primitive.color.wash.low}",
+            "$description": "Light low badge surface."
+          }
+        }
+      },
+      "stage": {
+        "vpd": {
+          "$value": "{primitive.color.green.800}",
+          "$description": "Light VPD text."
+        },
+        "selected": {
+          "$value": "{primitive.color.green.700}",
+          "$description": "Light selected stage border. #10b981 on white fails 3:1."
+        }
+      },
+      "summary": {
+        "heading": {
+          "$value": "{primitive.color.green.800}",
+          "$description": "Light summary heading."
+        },
+        "surface": {
+          "$value": "{primitive.color.green.100}",
+          "$description": "Light summary surface. This is the unused CSS --primary-light."
+        }
+      },
+      "productLink": {
+        "price": {
+          "$value": "{primitive.color.green.800}",
+          "$description": "Light price text."
+        },
+        "accent": {
+          "$value": "{primitive.color.green.700}",
+          "$description": "Light product border."
+        }
+      },
+      "analyze": {
+        "fill": {
+          "$value": "{primitive.color.green.700}",
+          "$description": "Light analyze fill. 5.48:1 against white, so the white label and the section both clear their bars."
+        },
+        "text": {
+          "$value": "{primitive.color.white}",
+          "$description": "Light analyze label."
+        }
+      },
+      "focus": {
+        "$value": "{primitive.color.green.700}",
+        "$description": "Light focus color. Proposal, same name as the dark focus token."
+      }
+    },
+    "shadow": {
+      "focus": {
+        "$value": {
+          "color": {
+            "colorSpace": "srgb",
+            "components": [
+              0.01569,
+              0.47059,
+              0.34118
+            ],
+            "hex": "#047857",
+            "alpha": 1
+          },
+          "offsetX": {
+            "value": 0,
+            "unit": "px"
+          },
+          "offsetY": {
+            "value": 0,
+            "unit": "px"
+          },
+          "blur": {
+            "value": 0,
+            "unit": "px"
+          },
+          "spread": {
+            "value": 3,
+            "unit": "px"
+          }
+        },
+        "$description": "Solid 3px focus ring in the light theme.",
+        "$type": "shadow"
+      }
+    }
+  }
+}

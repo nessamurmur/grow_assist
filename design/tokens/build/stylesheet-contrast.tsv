@@ -1,0 +1,17 @@
+pair	kind	bar	ratio	Lc	result	text	background
+white on primary	text	4.5	2.54	-54.2	fail	#ffffff	#10b981
+white on primary hover	text	4.5	3.77	-70.1	fail	#ffffff	#059669
+muted on raised	text	4.5	4.04	-41.9	fail	#94a3b8	#334155
+muted on canvas	text	4.5	6.96	-50.6	pass	#94a3b8	#0f172a
+secondary text on canvas	text	4.5	12.02	-79.3	pass	#cbd5e1	#0f172a
+primary text on canvas	text	4.5	16.30	-99.8	pass	#f1f5f9	#0f172a
+violet on canvas, large title	large	3	4.22	-31.8	pass	#8b5cf6	#0f172a
+violet on canvas, normal	text	4.5	4.22	-31.8	fail	#8b5cf6	#0f172a
+green text on canvas	text	4.5	7.04	-51.8	pass	#10b981	#0f172a
+error on canvas	text	4.5	9.41	-65.4	pass	#fca5a5	#0f172a
+border on canvas	ui	3	1.72	-7.4	fail	#334155	#0f172a
+border on surface	ui	3	1.41	0.0	fail	#334155	#1e293b
+high edge on raised	ui	3	2.75	-28.0	fail	#ef4444	#334155
+medium edge on raised	ui	3	4.82	-50.6	pass	#f59e0b	#334155
+low edge on raised	ui	3	2.82	-27.9	fail	#3b82f6	#334155
+focus ring 10 percent over surface	ui	3	1.17	0.0	fail	#1d3742	#1e293b

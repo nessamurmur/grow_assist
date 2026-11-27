@@ -1,0 +1,81 @@
+theme	pair	kind	bar	ratio	Lc	result
+dark	shell text on canvas	text	4.5	16.30	-99.8	pass
+dark	shell text on surface	text	4.5	13.35	-97.3	pass
+dark	shell text on raised	text	4.5	9.45	-91.1	pass
+dark	secondary on canvas	text	4.5	14.48	-91.4	pass
+dark	secondary on surface	text	4.5	11.87	-88.9	pass
+dark	secondary on raised	text	4.5	8.40	-82.7	pass
+dark	muted on canvas	text	4.5	8.42	-59.6	pass
+dark	muted on surface	text	4.5	6.90	-57.1	pass
+dark	muted on raised	text	4.5	4.89	-50.8	pass
+dark	waiting on canvas	text	4.5	14.48	-91.4	pass
+dark	loading on canvas	text	4.5	14.48	-91.4	pass
+dark	problem on canvas	text	4.5	12.34	-80.9	pass
+dark	VPD on stage surface	text	4.5	11.71	-78.0	pass
+dark	summary heading on summary	text	4.5	10.27	-84.6	pass
+dark	summary text on summary	text	4.5	12.02	-95.6	pass
+dark	price on product surface	text	4.5	11.71	-78.0	pass
+dark	analyze label on fill	text	4.5	9.94	75.4	pass
+dark	product action label on fill	text	4.5	9.94	75.4	pass
+dark	high badge	text	4.5	10.28	-78.5	pass
+dark	medium badge	text	4.5	11.04	-87.3	pass
+dark	low badge	text	4.5	10.05	-79.2	pass
+dark	stage detail on stage	text	4.5	14.48	-91.4	pass
+dark	recommendation title	text	4.5	9.45	-91.1	pass
+dark	recommendation description	text	4.5	8.40	-82.7	pass
+dark	readings text	text	4.5	16.30	-99.8	pass
+dark	readings placeholder	text	4.5	14.48	-91.4	pass
+dark	api key hint on surface	text	4.5	11.87	-88.9	pass
+dark	footer on canvas	text	4.5	8.42	-59.6	pass
+dark	tagline on canvas	text	4.5	14.48	-91.4	pass
+dark	border on canvas	ui	3	8.42	-59.6	pass
+dark	border on surface	ui	3	6.90	-57.1	pass
+dark	border on raised	ui	3	4.89	-50.8	pass
+dark	focus on canvas	ui	3	7.04	-51.8	pass
+dark	focus on surface	ui	3	5.77	-49.3	pass
+dark	selected stage on canvas	ui	3	7.04	-51.8	pass
+dark	high accent on raised	ui	3	5.46	-56.7	pass
+dark	medium accent on raised	ui	3	4.82	-50.6	pass
+dark	low accent on raised	ui	3	5.74	-59.4	pass
+dark	product border on canvas	ui	3	7.04	-51.8	pass
+dark	analyze fill on surface	ui	3	9.60	-75.5	pass
+light	shell text on canvas	text	4.5	17.06	101.4	pass
+light	shell text on surface	text	4.5	17.85	104.6	pass
+light	shell text on raised	text	4.5	16.30	98.3	pass
+light	secondary on canvas	text	4.5	9.90	90.9	pass
+light	secondary on surface	text	4.5	10.35	94.0	pass
+light	secondary on raised	text	4.5	9.45	87.7	pass
+light	muted on canvas	text	4.5	7.24	83.2	pass
+light	muted on surface	text	4.5	7.58	86.3	pass
+light	muted on raised	text	4.5	6.92	80.0	pass
+light	waiting on canvas	text	4.5	9.90	90.9	pass
+light	loading on canvas	text	4.5	9.90	90.9	pass
+light	problem on canvas	text	4.5	7.94	83.9	pass
+light	VPD on stage surface	text	4.5	7.34	83.1	pass
+light	summary heading on summary	text	4.5	6.78	77.7	pass
+light	summary text on summary	text	4.5	15.74	96.0	pass
+light	price on product surface	text	4.5	7.34	83.1	pass
+light	analyze label on fill	text	4.5	5.48	-82.2	pass
+light	product action label on fill	text	4.5	5.48	-82.2	pass
+light	high badge	text	4.5	8.20	78.6	pass
+light	medium badge	text	4.5	8.15	82.9	pass
+light	low badge	text	4.5	8.49	80.2	pass
+light	stage detail on stage	text	4.5	9.90	90.9	pass
+light	recommendation title	text	4.5	16.30	98.3	pass
+light	recommendation description	text	4.5	9.45	87.7	pass
+light	readings text	text	4.5	17.06	101.4	pass
+light	readings placeholder	text	4.5	9.90	90.9	pass
+light	api key hint on surface	text	4.5	10.35	94.0	pass
+light	footer on canvas	text	4.5	7.24	83.2	pass
+light	tagline on canvas	text	4.5	9.90	90.9	pass
+light	border on canvas	ui	3	4.55	69.9	pass
+light	border on surface	ui	3	4.76	73.0	pass
+light	border on raised	ui	3	4.34	66.7	pass
+light	focus on canvas	ui	3	5.24	73.7	pass
+light	focus on surface	ui	3	5.48	76.8	pass
+light	selected stage on canvas	ui	3	5.24	73.7	pass
+light	high accent on raised	ui	3	4.41	65.3	pass
+light	medium accent on raised	ui	3	4.58	67.7	pass
+light	low accent on raised	ui	3	4.72	68.6	pass
+light	product border on canvas	ui	3	5.24	73.7	pass
+light	analyze fill on surface	ui	3	5.48	76.8	pass
