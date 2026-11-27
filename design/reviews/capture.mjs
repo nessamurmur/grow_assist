@@ -331,8 +331,10 @@ function tally(name, violations) {
 async function main() {
   const browser = await chromium.launch();
   const rows = [];
+  let scanned = false;
   try {
     for (const state of states.filter((state) => !only || only.includes(state))) {
+      scanned = true;
       for (const width of widths) {
         for (const scheme of schemes) {
           const name = `${state}-${width}-${scheme}`;
@@ -348,6 +350,7 @@ async function main() {
       }
     }
     for (const state of ["empty", "filled", "results"].filter((state) => !only || only.includes(state))) {
+      scanned = true;
       for (const width of [360, 1280]) {
         for (const scheme of schemes) {
           const name = `${state}-${width}-${scheme}-zoom200`;
@@ -364,6 +367,7 @@ async function main() {
     }
     for (const suffix of ["-reduced-motion", "-forced-colors"]) {
       for (const state of ["empty", "results"].filter((state) => !only || only.includes(state))) {
+        scanned = true;
         for (const width of [360, 1280]) {
           for (const scheme of schemes) {
             const name = `${state}-${width}-${scheme}${suffix}`;
@@ -401,7 +405,7 @@ async function main() {
   } finally {
     await browser.close();
   }
-  writeFileSync(file("axe-rows.json"), JSON.stringify(rows, null, 2));
+  if (scanned) writeFileSync(file("axe-rows.json"), JSON.stringify(rows, null, 2));
   writeFileSync(file("capture-errors.json"), JSON.stringify(errors, null, 2));
   console.log("done", label, "errors", errors.length);
   if (errors.length) process.exitCode = 1;

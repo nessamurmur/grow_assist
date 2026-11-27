@@ -191,14 +191,43 @@ function paintOver(paint, bgRgb) {
   return composite(paint.rgb, paint.alpha, bgRgb);
 }
 
+const badgeUnder = "semantic.color.shell.raised";
+const underlay = {
+  "semantic.color.priority.high.badgeSurface": badgeUnder,
+  "semantic.color.priority.medium.badgeSurface": badgeUnder,
+  "semantic.color.priority.low.badgeSurface": badgeUnder,
+};
+
+function aliasTargets(tree, path) {
+  const found = [];
+  const seen = new Set();
+  let current = path;
+  while (current && !seen.has(current)) {
+    seen.add(current);
+    found.push(current);
+    const token = lookup(tree, current);
+    if (!token || typeof token.$value !== "string") break;
+    const match = token.$value.match(aliasRe);
+    if (!match) break;
+    current = match[1];
+  }
+  return found;
+}
+
+function underPath(tree, path) {
+  for (const target of aliasTargets(tree, path)) {
+    if (underlay[target]) return underlay[target];
+  }
+  return "semantic.color.shell.canvas";
+}
+
 function backdrop(tree, path, paint) {
   if (paint.alpha >= 1) return paint.rgb;
-  if (path === "semantic.color.shell.canvas") {
-    throw new Error(`${path} alpha ${paint.alpha} has no declared background`);
-  }
-  const canvas = resolvedPaint(tree, "semantic.color.shell.canvas");
-  if (canvas.alpha < 1) throw new Error("semantic.color.shell.canvas alpha has no declared background");
-  return composite(paint.rgb, paint.alpha, canvas.rgb);
+  const behind = underPath(tree, path);
+  if (behind === path) throw new Error(`${path} alpha ${paint.alpha} has no declared background`);
+  const base = resolvedPaint(tree, behind);
+  if (base.alpha < 1) throw new Error(`${behind} alpha has no declared background`);
+  return composite(paint.rgb, paint.alpha, base.rgb);
 }
 
 const pairs = [
@@ -327,11 +356,55 @@ function proveAlphaComposite(tree) {
   }
 }
 
+function translucent(hex, rgb, alpha) {
+  return { colorSpace: "srgb", components: rgb, hex, alpha };
+}
+
+function proveAliasCoverage(tree) {
+  const copy = clone(tree);
+  const fill = lookup(copy, "semantic.color.analyze.fill");
+  fill.$type = "color";
+  fill.$value = translucent("#000000", [0, 0, 0], 0.5);
+  requireDeclaredBackground(copy);
+  const orphan = clone(tree);
+  orphan.semantic.color.orphan = { $type: "color", $value: translucent("#ff0000", [1, 0, 0], 0.4) };
+  let threw = false;
+  try {
+    requireDeclaredBackground(orphan);
+  } catch (error) {
+    threw = String(error.message).includes("semantic.color.orphan");
+  }
+  if (!threw) throw new Error("uncovered translucent semantic color did not throw");
+}
+
+function proveBadgeUnderlay(tree) {
+  const copy = clone(tree);
+  const surface = lookup(copy, "semantic.color.priority.high.badgeSurface");
+  surface.$type = "color";
+  surface.$value = translucent("#ef4444", [239 / 255, 68 / 255, 68 / 255], 0.54);
+  const row = score(
+    copy,
+    "probe",
+    "semantic.color.priority.high.badgeText",
+    "semantic.color.priority.high.badgeSurface",
+    4.5,
+    "text",
+  );
+  const text = resolvedPaint(copy, "semantic.color.priority.high.badgeText").rgb;
+  const raised = resolvedPaint(copy, "semantic.color.shell.raised").rgb;
+  const canvas = resolvedPaint(copy, "semantic.color.shell.canvas").rgb;
+  const want = Number(wcag(text, composite([239, 68, 68], 0.54, raised)).toFixed(2));
+  const onCanvas = Number(wcag(text, composite([239, 68, 68], 0.54, canvas)).toFixed(2));
+  if (row.ratio !== want) throw new Error(`badge underlay ${row.ratio} expected ${want}`);
+  if (row.ratio === onCanvas) throw new Error("badge underlay used the canvas");
+}
+
 function requireDeclaredBackground(tree) {
   const used = new Set();
   for (const row of pairs) {
-    used.add(row[1]);
-    used.add(row[2]);
+    for (const path of [row[1], row[2]]) {
+      for (const target of aliasTargets(tree, path)) used.add(target);
+    }
   }
   const missing = [];
   walk(lookup(tree, "semantic.color"), ["semantic", "color"], (path, token) => {
@@ -414,6 +487,10 @@ function main() {
   selfCheck();
   const { dark: darkTree, light: lightTree } = loadResolver();
   proveAlphaComposite(darkTree);
+  proveAliasCoverage(darkTree);
+  proveAliasCoverage(lightTree);
+  proveBadgeUnderlay(darkTree);
+  proveBadgeUnderlay(lightTree);
   requireDeclaredBackground(darkTree);
   requireDeclaredBackground(lightTree);
   mkdirSync(buildDir, { recursive: true });
