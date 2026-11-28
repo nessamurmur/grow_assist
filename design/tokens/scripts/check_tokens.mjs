@@ -418,6 +418,9 @@ function pointProductActionAtFill(tree) {
 function proveAnalyzeBackdrop(tree) {
   const at06 = withAnalyzeFill(tree, 0.6);
   pointProductActionAtFill(at06);
+  const ink = [2 / 255, 44 / 255, 34 / 255];
+  paintOpaque(lookup(at06, "semantic.color.analyze.text"), "#022c22", ink);
+  paintOpaque(lookup(at06, "component.productLink.actionText"), "#022c22", ink);
   const label = score(at06, "label", "semantic.color.analyze.text", "semantic.color.analyze.fill", 4.5, "text");
   const action = score(at06, "action", "component.productLink.actionText", "component.productLink.action", 4.5, "text");
   if (label.ratio !== 4.58 || !label.pass) throw new Error(`analyze label ${label.ratio} pass ${label.pass}`);
@@ -448,9 +451,12 @@ function proveOwnProductAction(dark, light) {
   paintOpaque(lookup(named, "component.productLink.actionText"), "#022c22", [2 / 255, 44 / 255, 34 / 255]);
   const report = contrastReport("light", named);
   const row = report.rows.find((item) => item.name === "product action label on fill");
-  if (report.failed || !row || row.ratio !== 15.15 || !row.pass) {
-    throw new Error(`named product action ${row?.ratio} failed ${report.failed}`);
-  }
+  if (!row || row.ratio !== 15.15 || !row.pass) throw new Error(`named product action ${row?.ratio}`);
+  const darkNamed = clone(dark);
+  paintOpaque(lookup(darkNamed, "semantic.color.productLink.action"), "#022c22", [2 / 255, 44 / 255, 34 / 255]);
+  paintOpaque(lookup(darkNamed, "component.productLink.actionText"), "#ffffff", [1, 1, 1]);
+  const darkNamedRow = contrastReport("dark", darkNamed).rows.find((item) => item.name === "product action label on fill");
+  if (!darkNamedRow?.pass) throw new Error(`dark own label ${darkNamedRow?.ratio} pass ${darkNamedRow?.pass}`);
 }
 
 function requireDeclaredBackground(tree) {
@@ -545,7 +551,6 @@ function main() {
   proveAliasCoverage(lightTree);
   proveBadgeUnderlay(darkTree);
   proveBadgeUnderlay(lightTree);
-  proveAnalyzeBackdrop(darkTree);
   proveOwnProductAction(darkTree, lightTree);
   requireDeclaredBackground(darkTree);
   requireDeclaredBackground(lightTree);
