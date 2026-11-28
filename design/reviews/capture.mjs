@@ -1,13 +1,14 @@
-// One-off helper for the 26 November 2026 review. The app does not import it.
+// Capture helper for the heuristic review. The app does not import it.
 // Usage: node design/reviews/capture.mjs <label> <baseUrl> [states]
 // The label is "local" or "deployed". The URL is an argument so this file
 // does not store a host name. CAPTURE_MODULES is the package.json that
 // resolves playwright and @axe-core/playwright. CAPTURE_OUT is the directory
 // for screenshots and axe JSON. The default is outside this repository, and
 // those files are not committed.
-import { mkdirSync, writeFileSync } from "node:fs";
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { createRequire } from "node:module";
-import { join } from "node:path";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 
 const [label, baseUrl, onlyArg] = process.argv.slice(2);
 const only = onlyArg ? onlyArg.split(",") : null;
@@ -208,6 +209,158 @@ async function keyboardWalk(browser, width) {
   }
 }
 
+function proofHtml(css) {
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Focus proof</title>
+  <style>
+    ${css}
+    body {
+      margin: 0;
+      background: var(--semantic-color-shell-canvas);
+      color: var(--semantic-color-shell-text);
+      font: var(--semantic-font-body);
+    }
+    main {
+      background: var(--semantic-color-shell-surface);
+      padding: 24px;
+    }
+    .stage {
+      background: var(--component-stage-surface);
+      color: var(--component-stage-name);
+      border: 2px solid var(--component-stage-border);
+      border-radius: 12px;
+      padding: 12px;
+      margin-bottom: 16px;
+    }
+    .stage[data-selected="true"] { border-color: var(--component-stage-selected); }
+    .analyze {
+      background: var(--component-analyze-fill);
+      color: var(--component-analyze-text);
+      border: none;
+      border-radius: 8px;
+      padding: 12px 16px;
+      font: inherit;
+    }
+    .stage:focus, .analyze:focus {
+      outline: 3px solid var(--component-focus-ring);
+      outline-offset: 2px;
+      box-shadow: var(--component-focus-gapShadow), var(--component-focus-ringShadow);
+    }
+    @media (forced-colors: active) {
+      .stage:focus, .analyze:focus {
+        outline: 3px solid Highlight;
+        outline-offset: 2px;
+        box-shadow: none;
+      }
+      .stage[data-selected="true"] {
+        border-width: 4px;
+        border-color: Highlight;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <button class="stage" type="button" data-selected="true" aria-label="Seedling">
+      <span class="stage-icon" aria-hidden="true">🌱</span>
+      <span class="stage-name">Seedling</span>
+      <span class="stage-vpd">VPD 0.4-0.8 kPa</span>
+      <span class="stage-details">68-77°F 70-80% RH</span>
+    </button>
+    <button class="analyze" type="button">Analyze</button>
+    <span id="highlight-probe" style="color: Highlight">Highlight</span>
+    <span id="gap-probe" style="color: var(--component-focus-gap)">Gap</span>
+    <span id="ring-probe" style="color: var(--component-focus-ring)">Ring</span>
+  </main>
+</body>
+</html>`;
+}
+
+function assertFocusSample(name, info, forced) {
+  if (info.text !== "Analyze") throw new Error(`${name} focused ${info.text}`);
+  if (info.stageName !== "Seedling") throw new Error(`${name} stage name ${info.stageName}`);
+  if (!info.stageHidden) throw new Error(`${name} stage icon is in the name`);
+  for (const reading of ["VPD 0.4-0.8 kPa", "68-77°F", "70-80% RH"]) {
+    if (!info.stageText.includes(reading)) throw new Error(`${name} stage text missing ${reading}`);
+  }
+  if (info.outlineStyle !== "solid" || info.outlineWidth !== "3px") {
+    throw new Error(`${name} outline ${info.outlineStyle} ${info.outlineWidth}`);
+  }
+  if (forced) {
+    if (info.boxShadow !== "none") throw new Error(`${name} shadow ${info.boxShadow}`);
+    if (info.outlineColor !== info.highlight) throw new Error(`${name} outline ${info.outlineColor}`);
+    if (info.stageBorderWidth !== "4px" || info.stageBorderColor !== info.highlight) {
+      throw new Error(`${name} stage border ${info.stageBorderWidth} ${info.stageBorderColor}`);
+    }
+    return;
+  }
+  const shadow = `${info.gap} 0px 0px 0px 2px, ${info.ring} 0px 0px 0px 5px`;
+  if (info.boxShadow !== shadow) throw new Error(`${name} shadow ${info.boxShadow}`);
+  if (info.outlineColor !== info.ring) throw new Error(`${name} outline ${info.outlineColor}`);
+}
+
+async function focusProof(browser) {
+  const tokenDir = join(dirname(fileURLToPath(import.meta.url)), "..", "tokens", "build");
+  const cssFor = {
+    dark: readFileSync(join(tokenDir, "dark.css"), "utf8"),
+    light: readFileSync(join(tokenDir, "light.css"), "utf8"),
+  };
+  const samples = [];
+  for (const width of [360, 1280]) {
+    for (const scheme of ["dark", "light"]) {
+      for (const forced of [false, true]) {
+        const suffix = forced ? "-forced-colors" : "";
+        const context = await browser.newContext({
+          viewport: { width, height: 900 },
+          colorScheme: scheme,
+          forcedColors: forced ? "active" : undefined,
+        });
+        const page = await context.newPage();
+        try {
+          await page.setContent(proofHtml(cssFor[scheme]), { waitUntil: "domcontentloaded" });
+          await page.keyboard.press("Tab");
+          await page.keyboard.press("Tab");
+          const info = await page.evaluate(() => {
+            const el = document.activeElement;
+            const style = getComputedStyle(el);
+            const stage = document.querySelector(".stage");
+            const stageStyle = getComputedStyle(stage);
+            const icon = stage.querySelector(".stage-icon");
+            const highlight = getComputedStyle(document.querySelector("#highlight-probe")).color;
+            const gap = getComputedStyle(document.querySelector("#gap-probe")).color;
+            const ring = getComputedStyle(document.querySelector("#ring-probe")).color;
+            return {
+              text: (el.innerText || "").replace(/\s+/g, " ").trim(),
+              outlineStyle: style.outlineStyle,
+              outlineWidth: style.outlineWidth,
+              outlineColor: style.outlineColor,
+              boxShadow: style.boxShadow,
+              stageBorderWidth: stageStyle.borderTopWidth,
+              stageBorderColor: stageStyle.borderTopColor,
+              stageName: stage.getAttribute("aria-label") || "",
+              stageText: (stage.innerText || "").replace(/\s+/g, " ").trim(),
+              stageHidden: icon?.getAttribute("aria-hidden") === "true",
+              highlight,
+              gap,
+              ring,
+            };
+          });
+          const name = `token-focus-${width}-${scheme}${suffix}`;
+          await page.screenshot({ path: file(`${name}.png`) });
+          samples.push({ name, ...info });
+          assertFocusSample(name, info, forced);
+        } finally {
+          await context.close();
+        }
+      }
+    }
+  }
+  writeFileSync(file("token-focus.json"), JSON.stringify(samples, null, 2));
+}
+
 function tally(name, violations) {
   return violations.map((violation) => ({
     view: name,
@@ -222,6 +375,7 @@ function tally(name, violations) {
 async function main() {
   const browser = await chromium.launch();
   const rows = [];
+  let scanned = false;
   try {
     for (const state of states.filter((state) => !only || only.includes(state))) {
       for (const width of widths) {
@@ -229,6 +383,7 @@ async function main() {
           const name = `${state}-${width}-${scheme}`;
           try {
             const violations = await captureState(browser, state, width, scheme, "");
+            scanned = true;
             rows.push(...tally(`${label}-${name}`, violations));
             console.log("ok", name, "violations", violations.length);
           } catch (error) {
@@ -244,6 +399,7 @@ async function main() {
           const name = `${state}-${width}-${scheme}-zoom200`;
           try {
             const violations = await captureState(browser, state, width, scheme, "-zoom200");
+            scanned = true;
             rows.push(...tally(`${label}-${name}`, violations));
             console.log("ok", name);
           } catch (error) {
@@ -260,6 +416,7 @@ async function main() {
             const name = `${state}-${width}-${scheme}${suffix}`;
             try {
               const violations = await captureState(browser, state, width, scheme, suffix);
+              scanned = true;
               rows.push(...tally(`${label}-${name}`, violations));
               console.log("ok", name);
             } catch (error) {
@@ -270,7 +427,8 @@ async function main() {
         }
       }
     }
-    for (const width of only ? [] : [360, 1280]) {
+    const wantKeyboard = !only || only.includes("keyboard");
+    for (const width of wantKeyboard ? [360, 1280] : []) {
       try {
         await keyboardWalk(browser, width);
         console.log("ok keyboard", width);
@@ -279,10 +437,19 @@ async function main() {
         console.error("fail keyboard", width, error.message);
       }
     }
+    if (!only || only.includes("focus")) {
+      try {
+        await focusProof(browser);
+        console.log("ok focus proof");
+      } catch (error) {
+        errors.push({ name: "focus-proof", message: String(error).slice(0, 400) });
+        console.error("fail focus proof", error.message);
+      }
+    }
   } finally {
     await browser.close();
   }
-  writeFileSync(file("axe-rows.json"), JSON.stringify(rows, null, 2));
+  if (scanned) writeFileSync(file("axe-rows.json"), JSON.stringify(rows, null, 2));
   writeFileSync(file("capture-errors.json"), JSON.stringify(errors, null, 2));
   console.log("done", label, "errors", errors.length);
   if (errors.length) process.exitCode = 1;

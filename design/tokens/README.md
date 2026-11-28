@@ -6,7 +6,7 @@ Draft for review. The running app still paints from `priv/static/styles.css`. Th
 
 `grow_assist.tokens.json` is the foundation. It holds primitives, the dark semantic colors, the type roles, and the component aliases.
 
-`grow_assist.light.tokens.json` overrides the semantic colors that change in the light theme, including the focus shadow.
+`grow_assist.light.tokens.json` overrides the semantic colors that change in the light theme, including both focus bands.
 
 `grow_assist.resolver.json` is the DTCG 2025.10 resolver. The format module has no modes, so light and dark are a modifier rather than two parallel token trees.
 
@@ -22,7 +22,7 @@ Semantic tokens name the domain roles below. A semantic color aliases a primitiv
 
 Component tokens alias those roles onto the parts of the current page, such as `component.recommendation.description`. The alias is deliberate. A later change can restyle one part without renaming the role.
 
-188 foundation tokens. 92 primitive, 45 semantic, 51 component. The light file has 27 overrides.
+192 foundation tokens. 92 primitive, 47 semantic, 53 component. The light file has 27 overrides.
 
 ## Domain terms
 
@@ -251,7 +251,7 @@ Leading is 1.6 for the page and 1.75 for prose.
 
 Radius is 4px, 8px, 12px, and a 999px pill.
 
-Shadows are rest `0 4px 12px`, hover `0 8px 20px`, overlay `0 10px 30px`, and a semantic focus ring `0 0 0 3px` in the focus color. The stylesheet tints the button, product link, and stage hover shadows green. This draft uses 30% black for rest, hover, and overlay, the same ink as the section shadow.
+Shadows are rest `0 4px 12px`, hover `0 8px 20px`, and overlay `0 10px 30px`. The stylesheet tints the button, product link, and stage hover shadows green. This draft uses 30% black for rest, hover, and overlay, the same ink as the section shadow. The focus indicator is two solid bands, not one 3px shadow. See Focus ring.
 
 Border widths stay 1px, 2px, and 4px. Durations stay 200ms and 300ms. Easing is the CSS keyword `ease`, written as `cubic-bezier(0.25, 0.1, 0.25, 1)`.
 
@@ -333,15 +333,13 @@ White on `#10b981` is 2.54:1, and white on `#059669` is 3.77:1. The dark analyze
 
 `#ef4444` on `#334155` is 2.75:1. The dark high edge is `#fca5a5`. `#3b82f6` on `#334155` is 2.82:1. The dark low edge is `#93c5fd`. The medium edge `#f59e0b` already passes and stays.
 
-The 10% focus ring composites to 1.17:1. The draft uses a solid 3px ring in the focus color. Dark focus is `#10b981`. Light focus is `#047857`.
-
-That ring is scored on the canvas and on the surface. It is not scored on the analyze fill or on the selected stage border. Dark focus `#10b981` on the dark analyze fill `#6ee7b7` is 1.66:1. Light focus `#047857` is the same color as the light analyze fill and the light selected border, so that pair is 1:1. A ring in the focus color can disappear on those controls. Keep an outline that clears 3:1 against the control. Forced colors drop `box-shadow`, so the outline has to remain.
+The 10% focus ring composites to 1.17:1. A later single solid ring in `#10b981` still misses the analyze fill. See Focus ring.
 
 Badge surfaces become solid colors. The stylesheet uses a 20% wash. Dark problem text moves from `#fca5a5` to `#fecaca` so the APCA body bar clears. `#fca5a5` already passes WCAG.
 
 ## Contrast of the tokens
 
-80 semantic text, large-text, and UI pairs. 0 WCAG failures. Every UI pair also clears absolute Lc 45.
+92 semantic text, large-text, and UI pairs. 0 WCAG failures. Every UI pair clears absolute Lc 45 except the dark focus ring on the raised card, which is Lc -43.0 at 4.08:1.
 
 | Theme | Pair | Kind | Bar | Ratio | Lc | Result |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -377,8 +375,14 @@ Badge surfaces become solid colors. The stylesheet uses a 20% wash. Dark problem
 | dark | border on canvas | ui | 3 | 8.42 | -59.6 | pass |
 | dark | border on surface | ui | 3 | 6.90 | -57.1 | pass |
 | dark | border on raised | ui | 3 | 4.89 | -50.8 | pass |
-| dark | focus on canvas | ui | 3 | 7.04 | -51.8 | pass |
-| dark | focus on surface | ui | 3 | 5.77 | -49.3 | pass |
+| dark | focus ring on shell canvas | ui | 3 | 7.04 | -51.8 | pass |
+| dark | focus ring on shell surface | ui | 3 | 5.77 | -49.3 | pass |
+| dark | focus ring on shell raised | ui | 3 | 4.08 | -43.0 | pass |
+| dark | focus ring on stage surface | ui | 3 | 7.04 | -51.8 | pass |
+| dark | focus ring on readings surface | ui | 3 | 7.04 | -51.8 | pass |
+| dark | focus ring on summary surface | ui | 3 | 5.19 | -47.6 | pass |
+| dark | focus gap on analyze fill | ui | 3 | 9.94 | 75.4 | pass |
+| dark | focus gap on focus ring | ui | 3 | 5.97 | 50.7 | pass |
 | dark | selected stage on canvas | ui | 3 | 7.04 | -51.8 | pass |
 | dark | high accent on raised | ui | 3 | 5.46 | -56.7 | pass |
 | dark | medium accent on raised | ui | 3 | 4.82 | -50.6 | pass |
@@ -417,8 +421,14 @@ Badge surfaces become solid colors. The stylesheet uses a 20% wash. Dark problem
 | light | border on canvas | ui | 3 | 4.55 | 69.9 | pass |
 | light | border on surface | ui | 3 | 4.76 | 73.0 | pass |
 | light | border on raised | ui | 3 | 4.34 | 66.7 | pass |
-| light | focus on canvas | ui | 3 | 5.24 | 73.7 | pass |
-| light | focus on surface | ui | 3 | 5.48 | 76.8 | pass |
+| light | focus ring on shell canvas | ui | 3 | 5.24 | 73.7 | pass |
+| light | focus ring on shell surface | ui | 3 | 5.48 | 76.8 | pass |
+| light | focus ring on shell raised | ui | 3 | 5.01 | 70.5 | pass |
+| light | focus ring on stage surface | ui | 3 | 5.24 | 73.7 | pass |
+| light | focus ring on readings surface | ui | 3 | 5.24 | 73.7 | pass |
+| light | focus ring on summary surface | ui | 3 | 4.84 | 68.3 | pass |
+| light | focus gap on analyze fill | ui | 3 | 5.48 | -82.2 | pass |
+| light | focus gap on focus ring | ui | 3 | 5.48 | -82.2 | pass |
 | light | selected stage on canvas | ui | 3 | 5.24 | 73.7 | pass |
 | light | high accent on raised | ui | 3 | 4.41 | 65.3 | pass |
 | light | medium accent on raised | ui | 3 | 4.58 | 67.7 | pass |
@@ -437,6 +447,39 @@ Four dark text pairs still sit under the APCA body bar of 75. They pass WCAG.
 
 The footer uses the muted ink. Stage detail, the readings placeholder, and the key hint use secondary text, which clears the APCA body bar. If the footer must clear it too, point `component.shell.footer` at `semantic.color.shell.textSecondary`.
 
+## Focus ring
+
+One color cannot be the dark focus indicator. `#10b981` on the shell canvas is 7.04:1, on the shell surface 5.77:1, and on the raised card 4.08:1. The same green on the analyze fill `#6ee7b7` is 1.66:1. No 8-bit sRGB color reaches 3:1 against both `#334155` and `#6ee7b7`. The search peaks at 2.61:1. The light analyze fill is `#047857`, which was the whole light focus color, so that pair was 1:1.
+
+The indicator is two solid bands. The gap is the inner 2px. It touches the analyze fill, and it touches the ring. The ring is the outer 3px, painted as a 5px spread behind the gap. It touches the shell canvas, the shell surface, the raised card, the stage surface, the readings surface, and the summary surface. For each of those surfaces the band that touches it clears 3:1. The other band can miss. That miss is why there are two bands.
+
+| Theme | Band | Hex | Role |
+| --- | --- | --- | --- |
+| dark | gap | `#022c22` | `green.950`, the analyze label. 9.94:1 on the analyze fill. 5.97:1 on the ring. |
+| dark | ring | `#10b981` | `green.500`, the selected stage emerald. |
+| light | gap | `#ffffff` | 5.48:1 on the analyze fill and on the ring. |
+| light | ring | `#047857` | `green.700`. 5.48:1 on the shell surface, 5.24:1 on the canvas, 5.01:1 on the raised card, 4.84:1 on the summary. |
+
+The dark pair stays on the slate and emerald palette. The light ring is the same green as the light button, so the white gap is what separates the ring from the button.
+
+Paint the bands in this order.
+
+```css
+box-shadow: var(--component-focus-gapShadow), var(--component-focus-ringShadow);
+outline: 3px solid var(--component-focus-ring);
+outline-offset: 2px;
+```
+
+Forced colors drop `box-shadow`. The outline remains. In `@media (forced-colors: active)`, set `outline-color` to `Highlight` and drop the shadow.
+
+`check_tokens.mjs` scores each adjacent pair at 3:1 and writes `build/focus-contrast.tsv`. A spare pair is the band that does not touch that surface. A spare miss does not fail the run. An adjacent miss does. The same run fails when the best of the two bands is under 3:1 on any listed surface.
+
+## Forced colors and stage names
+
+The selected stage is a green border in the stylesheet. Forced colors replace author colors, so the selection needs a cue that is not color. Use `primitive.border.accent` (4px) on the selected card and `primitive.border.field` (2px) on the resting cards. Set the selected border to `Highlight`. The weight is the cue. Add a check mark only if a later layout drops the border.
+
+The stage icon is `🌱`, `🌿`, or `🌸` inside `.stage-icon`. Mark that element `aria-hidden="true"` so the emoji is not part of the name. The button also contains the VPD, temperature, and humidity, so hiding the icon leaves those readings in the name. Set the button's accessible name to Seedling, Vegetation, or Flowering.
+
 ## Regenerate
 
 From the repository root.
@@ -447,4 +490,4 @@ node design/tokens/scripts/define_tokens.mjs
 node design/tokens/scripts/check_tokens.mjs
 ```
 
-`define_tokens.mjs` writes the three JSON files. `check_tokens.mjs` reads the resolver. It loads the one foundation file and the one light file the resolver names, resolves aliases, writes `build/dark.css` and `build/light.css`, and exits 1 if a token pair misses its bar or the resolver lists a different number of those files. It rewrites the proof CSS on every run, so a stale copy is replaced rather than reported. CI does not run these scripts. That stays true while the app does not import the tokens. A typography token becomes a `font` shorthand plus a sibling custom property for letter spacing, because one custom property cannot hold both. Edit the script, not the JSON. The dark border and the dark footer share `color.ink.muted`, so a border at that step can read as strongly as the footer.
+`define_tokens.mjs` writes the three JSON files. `check_tokens.mjs` reads the resolver. It loads the one foundation file and the one light file the resolver names, resolves aliases, writes `build/dark.css` and `build/light.css`, and exits 1 if a token pair misses its bar, a focus surface is under 3:1 for both bands, or the resolver lists a different number of those files. A semantic color with alpha below 1 is composited over the background named in its pair. A translucent badge surface is composited over the raised card. A translucent analyze fill is composited over the shell surface for the analyze label and the focus gap. The product action uses that same fill and is composited over the shell canvas. The backdrop is the control named in the pair, not the shared color alias. A pair that reaches a semantic color through an alias still counts as that color's declared background. A translucent shell canvas has no further background, and the check throws. A translucent semantic color that no pair names, even through an alias, also throws. The focus shadow color is an alias of the focus color, so the light override does not repeat the hex. The script rewrites the proof CSS on every run, so a stale copy is replaced rather than reported. CI does not run these scripts. That stays true while the app does not import the tokens. A typography token becomes a `font` shorthand plus a sibling custom property for letter spacing, because one custom property cannot hold both. Edit the script, not the JSON. The dark border and the dark footer share `color.ink.muted`, so a border at that step can read as strongly as the footer.

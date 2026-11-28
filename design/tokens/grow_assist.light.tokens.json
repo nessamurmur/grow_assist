@@ -123,42 +123,14 @@
         }
       },
       "focus": {
-        "$value": "{primitive.color.green.700}",
-        "$description": "Light focus color. Proposal, same name as the dark focus token."
-      }
-    },
-    "shadow": {
-      "focus": {
-        "$value": {
-          "color": {
-            "colorSpace": "srgb",
-            "components": [
-              0.01569,
-              0.47059,
-              0.34118
-            ],
-            "hex": "#047857",
-            "alpha": 1
-          },
-          "offsetX": {
-            "value": 0,
-            "unit": "px"
-          },
-          "offsetY": {
-            "value": 0,
-            "unit": "px"
-          },
-          "blur": {
-            "value": 0,
-            "unit": "px"
-          },
-          "spread": {
-            "value": 3,
-            "unit": "px"
-          }
+        "gap": {
+          "$value": "{primitive.color.white}",
+          "$description": "Light inner band."
         },
-        "$description": "Solid 3px focus ring in the light theme.",
-        "$type": "shadow"
+        "ring": {
+          "$value": "{primitive.color.green.700}",
+          "$description": "Light outer band."
+        }
       }
     }
   }

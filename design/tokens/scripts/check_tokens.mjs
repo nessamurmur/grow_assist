@@ -176,13 +176,61 @@ function hexToRgb(hex) {
   return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
 }
 
-function resolvedColor(tree, path) {
+function resolvedPaint(tree, path) {
   const token = lookup(tree, path);
   const type = tokenType(token, tree, [path]);
   if (type !== "color") throw new Error(`${path} is ${type}`);
   const value = resolveValue(token.$value, tree, [path]);
   if (!value.hex) throw new Error(`${path} has no hex`);
-  return hexToRgb(value.hex);
+  const alpha = value.alpha === undefined ? 1 : value.alpha;
+  return { rgb: hexToRgb(value.hex), alpha };
+}
+
+function paintOver(paint, bgRgb) {
+  if (paint.alpha >= 1) return paint.rgb;
+  return composite(paint.rgb, paint.alpha, bgRgb);
+}
+
+const shellCanvas = "semantic.color.shell.canvas";
+const shellSurface = "semantic.color.shell.surface";
+const raisedCard = "semantic.color.shell.raised";
+const underlay = {
+  "semantic.color.priority.high.badgeSurface": raisedCard,
+  "semantic.color.priority.medium.badgeSurface": raisedCard,
+  "semantic.color.priority.low.badgeSurface": raisedCard,
+  "component.priority.high.badgeSurface": raisedCard,
+  "component.priority.medium.badgeSurface": raisedCard,
+  "component.priority.low.badgeSurface": raisedCard,
+  "semantic.color.analyze.fill": shellSurface,
+};
+
+function aliasTargets(tree, path) {
+  const found = [];
+  const seen = new Set();
+  let current = path;
+  while (current && !seen.has(current)) {
+    seen.add(current);
+    found.push(current);
+    const token = lookup(tree, current);
+    if (!token || typeof token.$value !== "string") break;
+    const match = token.$value.match(aliasRe);
+    if (!match) break;
+    current = match[1];
+  }
+  return found;
+}
+
+function underPath(_tree, path) {
+  return underlay[path] ?? shellCanvas;
+}
+
+function backdrop(tree, path, paint) {
+  if (paint.alpha >= 1) return paint.rgb;
+  const behind = underPath(tree, path);
+  if (behind === path) throw new Error(`${path} alpha ${paint.alpha} has no declared background`);
+  const base = resolvedPaint(tree, behind);
+  if (base.alpha < 1) throw new Error(`${behind} alpha has no declared background`);
+  return composite(paint.rgb, paint.alpha, base.rgb);
 }
 
 const pairs = [
@@ -218,8 +266,14 @@ const pairs = [
   ["border on canvas", "semantic.color.shell.border", "semantic.color.shell.canvas", 3, "ui"],
   ["border on surface", "semantic.color.shell.border", "semantic.color.shell.surface", 3, "ui"],
   ["border on raised", "semantic.color.shell.border", "semantic.color.shell.raised", 3, "ui"],
-  ["focus on canvas", "semantic.color.focus", "semantic.color.shell.canvas", 3, "ui"],
-  ["focus on surface", "semantic.color.focus", "semantic.color.shell.surface", 3, "ui"],
+  ["focus ring on shell canvas", "semantic.color.focus.ring", "semantic.color.shell.canvas", 3, "ui"],
+  ["focus ring on shell surface", "semantic.color.focus.ring", "semantic.color.shell.surface", 3, "ui"],
+  ["focus ring on shell raised", "semantic.color.focus.ring", "semantic.color.shell.raised", 3, "ui"],
+  ["focus ring on stage surface", "semantic.color.focus.ring", "component.stage.surface", 3, "ui"],
+  ["focus ring on readings surface", "semantic.color.focus.ring", "component.readings.surface", 3, "ui"],
+  ["focus ring on summary surface", "semantic.color.focus.ring", "semantic.color.summary.surface", 3, "ui"],
+  ["focus gap on analyze fill", "semantic.color.focus.gap", "semantic.color.analyze.fill", 3, "ui"],
+  ["focus gap on focus ring", "semantic.color.focus.gap", "semantic.color.focus.ring", 3, "ui"],
   ["selected stage on canvas", "semantic.color.stage.selected", "semantic.color.shell.canvas", 3, "ui"],
   ["high accent on raised", "semantic.color.priority.high.accent", "semantic.color.shell.raised", 3, "ui"],
   ["medium accent on raised", "semantic.color.priority.medium.accent", "semantic.color.shell.raised", 3, "ui"],
@@ -242,19 +296,187 @@ function themeCss(tree) {
   return `:root {\n${lines.join("\n")}\n}\n`;
 }
 
+function score(tree, name, textPath, bgPath, bar, kind) {
+  const text = resolvedPaint(tree, textPath);
+  const bg = resolvedPaint(tree, bgPath);
+  const bgRgb = backdrop(tree, bgPath, bg);
+  const textRgb = paintOver(text, bgRgb);
+  const ratio = wcag(textRgb, bgRgb);
+  const lc = apca(textRgb, bgRgb);
+  const pass = ratio + 1e-9 >= bar;
+  return { name, kind, bar, ratio: Number(ratio.toFixed(2)), lc: Number(lc.toFixed(1)), pass };
+}
+
 function contrastReport(theme, tree) {
   const rows = [];
   let failed = 0;
   for (const [name, textPath, bgPath, bar, kind] of pairs) {
-    const text = resolvedColor(tree, textPath);
-    const bg = resolvedColor(tree, bgPath);
-    const ratio = wcag(text, bg);
-    const lc = apca(text, bg);
-    const pass = ratio + 1e-9 >= bar;
-    if (!pass) failed += 1;
-    rows.push({ theme, name, kind, bar, ratio: Number(ratio.toFixed(2)), lc: Number(lc.toFixed(1)), pass });
+    const row = { theme, ...score(tree, name, textPath, bgPath, bar, kind) };
+    if (!row.pass) failed += 1;
+    rows.push(row);
   }
   return { rows, failed };
+}
+
+const focusBands = ["semantic.color.focus.gap", "semantic.color.focus.ring"];
+const focusSurfaces = [
+  ["shell canvas", "semantic.color.shell.canvas"],
+  ["shell surface", "semantic.color.shell.surface"],
+  ["shell raised", "semantic.color.shell.raised"],
+  ["stage surface", "component.stage.surface"],
+  ["readings surface", "component.readings.surface"],
+  ["summary surface", "semantic.color.summary.surface"],
+  ["analyze fill", "semantic.color.analyze.fill"],
+];
+
+function focusMatrix(theme, tree) {
+  const rows = [];
+  let failed = 0;
+  for (const [surfaceName, surfacePath] of focusSurfaces) {
+    const scored = focusBands.map((band) => {
+      const bandName = band.endsWith(".gap") ? "gap" : "ring";
+      const row = score(tree, `${bandName} on ${surfaceName}`, band, surfacePath, 3, "ui");
+      const adjacent = pairs.some((pair) => pair[1] === band && pair[2] === surfacePath);
+      return { ...row, theme, band: bandName, surface: surfaceName, adjacent };
+    });
+    const best = Math.max(...scored.map((row) => row.ratio));
+    if (best + 1e-9 < 3) failed += 1;
+    rows.push(...scored);
+  }
+  const between = score(tree, "gap on ring", focusBands[0], focusBands[1], 3, "ui");
+  if (!between.pass) failed += 1;
+  rows.push({ ...between, theme, band: "gap", surface: "focus ring", adjacent: true });
+  return { rows, failed };
+}
+
+function proveAlphaComposite(tree) {
+  const copy = clone(tree);
+  const ink = lookup(copy, "primitive.color.slate.100");
+  ink.$value = { ...ink.$value, alpha: 0 };
+  const row = score(copy, "probe", "semantic.color.shell.text", "semantic.color.shell.canvas", 4.5, "text");
+  if (row.pass || row.ratio > 1.01) {
+    throw new Error(`alpha 0 shell text on canvas scored ${row.ratio} pass ${row.pass}`);
+  }
+}
+
+function translucent(hex, rgb, alpha) {
+  return { colorSpace: "srgb", components: rgb, hex, alpha };
+}
+
+function proveAliasCoverage(tree) {
+  const copy = clone(tree);
+  const fill = lookup(copy, "semantic.color.analyze.fill");
+  fill.$type = "color";
+  fill.$value = translucent("#000000", [0, 0, 0], 0.5);
+  requireDeclaredBackground(copy);
+  const orphan = clone(tree);
+  orphan.semantic.color.orphan = { $type: "color", $value: translucent("#ff0000", [1, 0, 0], 0.4) };
+  let threw = false;
+  try {
+    requireDeclaredBackground(orphan);
+  } catch (error) {
+    threw = String(error.message).includes("semantic.color.orphan");
+  }
+  if (!threw) throw new Error("uncovered translucent semantic color did not throw");
+}
+
+function proveBadgeUnderlay(tree) {
+  const copy = clone(tree);
+  const surface = lookup(copy, "semantic.color.priority.high.badgeSurface");
+  surface.$type = "color";
+  surface.$value = translucent("#ef4444", [239 / 255, 68 / 255, 68 / 255], 0.54);
+  const row = score(
+    copy,
+    "probe",
+    "semantic.color.priority.high.badgeText",
+    "semantic.color.priority.high.badgeSurface",
+    4.5,
+    "text",
+  );
+  const text = resolvedPaint(copy, "semantic.color.priority.high.badgeText").rgb;
+  const raised = resolvedPaint(copy, "semantic.color.shell.raised").rgb;
+  const canvas = resolvedPaint(copy, "semantic.color.shell.canvas").rgb;
+  const want = Number(wcag(text, composite([239, 68, 68], 0.54, raised)).toFixed(2));
+  const onCanvas = Number(wcag(text, composite([239, 68, 68], 0.54, canvas)).toFixed(2));
+  if (row.ratio !== want) throw new Error(`badge underlay ${row.ratio} expected ${want}`);
+  if (row.ratio === onCanvas) throw new Error("badge underlay used the canvas");
+}
+
+function withAnalyzeFill(tree, alpha) {
+  const copy = clone(tree);
+  const fill = lookup(copy, "semantic.color.analyze.fill");
+  fill.$type = "color";
+  fill.$value = translucent("#6ee7b7", [110 / 255, 231 / 255, 183 / 255], alpha);
+  return copy;
+}
+
+function pointProductActionAtFill(tree) {
+  const action = lookup(tree, "component.productLink.action");
+  action.$value = "{semantic.color.analyze.fill}";
+}
+
+function proveAnalyzeBackdrop(tree) {
+  const at06 = withAnalyzeFill(tree, 0.6);
+  pointProductActionAtFill(at06);
+  const ink = [2 / 255, 44 / 255, 34 / 255];
+  paintOpaque(lookup(at06, "semantic.color.analyze.text"), "#022c22", ink);
+  paintOpaque(lookup(at06, "component.productLink.actionText"), "#022c22", ink);
+  const label = score(at06, "label", "semantic.color.analyze.text", "semantic.color.analyze.fill", 4.5, "text");
+  const action = score(at06, "action", "component.productLink.actionText", "component.productLink.action", 4.5, "text");
+  if (label.ratio !== 4.58 || !label.pass) throw new Error(`analyze label ${label.ratio} pass ${label.pass}`);
+  if (action.ratio !== 4.2 || action.pass) throw new Error(`product action ${action.ratio} pass ${action.pass}`);
+  const gap = score(withAnalyzeFill(tree, 0.42), "gap", "semantic.color.focus.gap", "semantic.color.analyze.fill", 3, "ui");
+  if (gap.ratio !== 3.02 || !gap.pass) throw new Error(`focus gap ${gap.ratio} pass ${gap.pass}`);
+}
+
+function paintOpaque(token, hex, rgb) {
+  token.$type = "color";
+  token.$value = translucent(hex, rgb, 1);
+}
+
+function proveOwnProductAction(dark, light) {
+  const darkCopy = clone(dark);
+  const lightCopy = clone(light);
+  paintOpaque(lookup(darkCopy, "semantic.color.productLink.action"), "#6ee7b7", [110 / 255, 231 / 255, 183 / 255]);
+  paintOpaque(lookup(darkCopy, "component.productLink.actionText"), "#022c22", [2 / 255, 44 / 255, 34 / 255]);
+  paintOpaque(lookup(lightCopy, "semantic.color.productLink.action"), "#047857", [4 / 255, 120 / 255, 87 / 255]);
+  paintOpaque(lookup(lightCopy, "component.productLink.actionText"), "#ffffff", [1, 1, 1]);
+  proveAnalyzeBackdrop(darkCopy);
+  const darkRow = score(darkCopy, "action", "component.productLink.actionText", "component.productLink.action", 4.5, "text");
+  const lightRow = score(lightCopy, "action", "component.productLink.actionText", "component.productLink.action", 4.5, "text");
+  if (!darkRow.pass || darkRow.ratio !== 9.94) throw new Error(`own dark product action ${darkRow.ratio} pass ${darkRow.pass}`);
+  if (!lightRow.pass || lightRow.ratio !== 5.48) throw new Error(`own light product action ${lightRow.ratio} pass ${lightRow.pass}`);
+  const named = clone(light);
+  paintOpaque(lookup(named, "semantic.color.productLink.action"), "#ffffff", [1, 1, 1]);
+  paintOpaque(lookup(named, "component.productLink.actionText"), "#022c22", [2 / 255, 44 / 255, 34 / 255]);
+  const report = contrastReport("light", named);
+  const row = report.rows.find((item) => item.name === "product action label on fill");
+  if (!row || row.ratio !== 15.15 || !row.pass) throw new Error(`named product action ${row?.ratio}`);
+  const darkNamed = clone(dark);
+  paintOpaque(lookup(darkNamed, "semantic.color.productLink.action"), "#022c22", [2 / 255, 44 / 255, 34 / 255]);
+  paintOpaque(lookup(darkNamed, "component.productLink.actionText"), "#ffffff", [1, 1, 1]);
+  const darkNamedRow = contrastReport("dark", darkNamed).rows.find((item) => item.name === "product action label on fill");
+  if (!darkNamedRow?.pass) throw new Error(`dark own label ${darkNamedRow?.ratio} pass ${darkNamedRow?.pass}`);
+}
+
+function requireDeclaredBackground(tree) {
+  const used = new Set();
+  for (const row of pairs) {
+    for (const path of [row[1], row[2]]) {
+      for (const target of aliasTargets(tree, path)) used.add(target);
+    }
+  }
+  const missing = [];
+  walk(lookup(tree, "semantic.color"), ["semantic", "color"], (path, token) => {
+    if (tokenType(token, tree, path) !== "color") return;
+    const value = resolveValue(token.$value, tree, path);
+    if (!value || value.alpha === undefined || value.alpha >= 1) return;
+    const id = path.join(".");
+    if (!used.has(id)) missing.push(id);
+  });
+  if (missing.length) {
+    throw new Error(`translucent semantic color has no declared background: ${missing.join(", ")}`);
+  }
 }
 
 const stylesheetPairs = [
@@ -324,6 +546,14 @@ function loadResolver() {
 function main() {
   selfCheck();
   const { dark: darkTree, light: lightTree } = loadResolver();
+  proveAlphaComposite(darkTree);
+  proveAliasCoverage(darkTree);
+  proveAliasCoverage(lightTree);
+  proveBadgeUnderlay(darkTree);
+  proveBadgeUnderlay(lightTree);
+  proveOwnProductAction(darkTree, lightTree);
+  requireDeclaredBackground(darkTree);
+  requireDeclaredBackground(lightTree);
   mkdirSync(buildDir, { recursive: true });
   writeFileSync(join(buildDir, "dark.css"), themeCss(darkTree));
   writeFileSync(join(buildDir, "light.css"), themeCss(lightTree));
@@ -346,7 +576,24 @@ function main() {
     "pair\tkind\tbar\tratio\tLc\tresult\ttext\tbackground\n" + currentBody + "\n",
   );
   console.log("stylesheet fails", current.filter((row) => !row.pass).length);
-  const failed = dark.failed + lightReport.failed;
+  const darkFocus = focusMatrix("dark", darkTree);
+  const lightFocus = focusMatrix("light", lightTree);
+  const focusRows = [...darkFocus.rows, ...lightFocus.rows];
+  writeFileSync(join(buildDir, "focus-contrast.json"), JSON.stringify(focusRows, null, 2) + "\n");
+  const focusBody = focusRows
+    .map((row) =>
+      [row.theme, row.band, row.surface, row.ratio.toFixed(2), row.lc.toFixed(1), row.pass ? "pass" : "fail", row.adjacent ? "adjacent" : "spare"].join(
+        "\t",
+      ),
+    )
+    .join("\n");
+  writeFileSync(
+    join(buildDir, "focus-contrast.tsv"),
+    "theme\tband\tsurface\tratio\tLc\tresult\trole\n" + focusBody + "\n",
+  );
+  const focusFailed = darkFocus.failed + lightFocus.failed;
+  console.log(`focus surfaces failed ${focusFailed}`);
+  const failed = dark.failed + lightReport.failed + focusFailed;
   console.log(`pairs ${rows.length}, failed ${failed}`);
   for (const row of rows.filter((row) => !row.pass)) {
     console.log(`FAIL ${row.theme} ${row.name} ${row.ratio} Lc ${row.lc} bar ${row.bar}`);

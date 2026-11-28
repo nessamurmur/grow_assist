@@ -32,10 +32,18 @@ const weight = (value, description) => tok("fontWeight", value, description);
 const alias = (path, description) => tok(null, `{${path}}`, description);
 
 function shadow(hex, alpha, x, y, blur, spread, description) {
+  return shadowValue(color(hex, alpha), x, y, blur, spread, description);
+}
+
+function shadowAlias(colorPath, x, y, blur, spread, description) {
+  return shadowValue(`{${colorPath}}`, x, y, blur, spread, description);
+}
+
+function shadowValue(paint, x, y, blur, spread, description) {
   return tok(
     "shadow",
     {
-      color: color(hex, alpha),
+      color: paint,
       offsetX: { value: x, unit: "px" },
       offsetY: { value: y, unit: "px" },
       blur: { value: blur, unit: "px" },
@@ -44,6 +52,9 @@ function shadow(hex, alpha, x, y, blur, spread, description) {
     description,
   );
 }
+
+const focusGapPx = 2;
+const focusRingPx = 3;
 
 function typeStyle(sizePath, weightPath, leadingPath, description, tracking = 0) {
   return tok(
@@ -276,10 +287,18 @@ const foundation = {
         fill: alias("primitive.color.green.300", "Dark analyze fill. A #047857 fill on the #1e293b section is 2.67:1, so the dark theme uses the light green and dark label instead of white on green."),
         text: alias("primitive.color.green.950", "Dark analyze label."),
       },
-      focus: alias("primitive.color.green.500", "Proposal. No domain term for the keyboard focus indicator. This is the CSS focus border color, which already passes 3:1. The 10% ring does not."),
+      focus: {
+        $description:
+          "The gap is the inner 2px and touches the analyze fill. The ring is the outer 3px and touches the shell, the stage card, the readings field, and the summary.",
+        gap: alias("primitive.color.green.950", "Dark inner band."),
+        ring: alias("primitive.color.green.500", "Dark outer band."),
+      },
     },
     shadow: {
-      focus: shadow("#10b981", 1, 0, 0, 0, 3, "Solid 3px focus ring in the dark theme."),
+      focus: {
+        gap: shadowAlias("semantic.color.focus.gap", 0, 0, 0, focusGapPx, "Inner band."),
+        ring: shadowAlias("semantic.color.focus.ring", 0, 0, 0, focusGapPx + focusRingPx, "Outer band."),
+      },
     },
     font: {
       display: typeStyle("primitive.font.size.48", "primitive.font.weight.bold", "primitive.font.leading.body", "Page title at the desktop size. The h1 does not set its own line height."),
@@ -339,9 +358,12 @@ const foundation = {
       font: alias("semantic.font.analyze", "Analyze label type."),
     },
     focus: {
-      $description: "Proposal. No domain term.",
-      color: alias("semantic.color.focus", "Focus border and ring color."),
-      ring: alias("semantic.shadow.focus", "Focus ring."),
+      $description:
+        "Paint the gap shadow, then the ring shadow, as box-shadow. Forced colors drop box-shadow, so also keep a 3px outline in the ring color. Under forced-colors, set that outline to Highlight.",
+      gap: alias("semantic.color.focus.gap", "Inner band."),
+      ring: alias("semantic.color.focus.ring", "Outer band. Also the outline color."),
+      gapShadow: alias("semantic.shadow.focus.gap", "Inner band shadow."),
+      ringShadow: alias("semantic.shadow.focus.ring", "Outer band shadow."),
     },
     status: {
       waiting: alias("semantic.color.status.waiting", "Empty recommendations copy."),
@@ -436,10 +458,10 @@ const lightColor = {
         fill: alias("primitive.color.green.700", "Light analyze fill. 5.48:1 against white, so the white label and the section both clear their bars."),
         text: alias("primitive.color.white", "Light analyze label."),
       },
-      focus: alias("primitive.color.green.700", "Light focus color. Proposal, same name as the dark focus token."),
-    },
-    shadow: {
-      focus: shadow("#047857", 1, 0, 0, 0, 3, "Solid 3px focus ring in the light theme."),
+      focus: {
+        gap: alias("primitive.color.white", "Light inner band."),
+        ring: alias("primitive.color.green.700", "Light outer band."),
+      },
     },
   },
 };

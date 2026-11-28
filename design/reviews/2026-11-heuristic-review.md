@@ -110,6 +110,31 @@ What is working, and should stay.
 
 The readings and key labels are wired to their fields. The key is a password field. Priority is a word, "High Impact", plus a color, so the badge is not color alone. At 360 the page is one column and the type stays in the viewport. The keyboard order has no trap. The deployed empty page matches the local build. `apply` keeps the stage, the readings, and the key when status becomes `Problem` or `Ready`.
 
+## Follow-up, 27 November 2026
+
+This pass changes the token draft only. `priv/static/styles.css` is unchanged, so the running page still matches the findings above.
+
+| Finding | Status |
+| --- | --- |
+| Keyboard focus is missing or under 3:1 on the control. Severity 3, Visibility of system status. | Resolved in the token draft. The indicator is two bands in both themes, so the CSS is one rule. In the dark theme no 8-bit sRGB color clears 3:1 against both the raised card and the analyze fill. The search peaks at 2.61:1. Light can use one dark color. Dark gap `#022c22` is 9.94:1 on the analyze fill `#6ee7b7` and 5.97:1 on the ring `#10b981`. That ring is 7.04:1 on the shell canvas, 5.77:1 on the shell surface, 4.08:1 on the raised card, 7.04:1 on the stage surface and the readings surface, and 5.19:1 on the summary. Light gap `#ffffff` is 5.48:1 on the analyze fill `#047857` and 5.48:1 on the ring. That ring is 5.24:1 on the canvas, 5.48:1 on the shell surface, 5.01:1 on the raised card, 5.24:1 on the stage and readings surfaces, and 4.84:1 on the summary. The checker fails if an adjacent pair misses 3:1. The running stylesheet still has no focus rule on the stage cards or on Analyze. |
+| Selected stage is a green border and the name does not change. Severity 2. | The `aria-pressed` fix is still open on the page. Forced colors now have a separate cue in the token note: selected border 4px, resting border 2px, color `Highlight`. Not in the app. |
+| Stage card icons are part of the button name. | Guidance added. `.stage-icon` is decorative (`aria-hidden="true"`). The button also contains the VPD, temperature, and humidity, so the accessible name is Seedling, Vegetation, or Flowering only when the button names the stage. Not in the app. The cart emoji row is a different control and is still open. |
+| Light forced colors fail `color-contrast`. Severity 2. | Not reproduced on this re-run, and not a token defect. The cause is below. |
+
+`check_tokens.mjs` composites a semantic color with alpha below 1 over the background in its pair. Alpha 0 on shell text scores 1:1 against the canvas and fails. A translucent badge surface is scored over the raised card. A translucent analyze fill is scored over the shell surface, and the product action that shares that fill is scored over the shell canvas. A pair that reaches a semantic color through an alias counts. A translucent semantic color that no pair names throws. The focus proof fails unless the ring is the 2px gap plus the 5px ring in the gap and ring colors, forced colors keep a 3px `Highlight` outline and a 4px `Highlight` selected border, and the stage button's accessible name is Seedling while the card still shows the VPD, temperature, and humidity. The proof page does not open the running app. An axe summary is written only after a capture returns a result.
+
+### Light forced colors, re-run
+
+The capture was `empty` and `results` at 360 and 1280, in dark, light, and forced colors. axe-core 4.14.1 with tags `wcag2a`, `wcag2aa`, `wcag21a`, `wcag21aa`, `wcag22aa`. Violations were 0 on every one of those pages, including `local-axe-empty-360-light-forced-colors.json` and `local-axe-results-360-light-forced-colors.json`. The same is true at 1280. Dark forced colors also has 0 violations.
+
+With `forced-colors: active` and a light scheme, computed style on `body`, the stage card, and Analyze is `rgb(0, 0, 0)` on `rgb(255, 255, 255)`. With a dark scheme it is white on black. `forced-color-adjust` stays `auto`. Chromium replaces the stylesheet colors with system colors before axe measures them. Black on white is 21:1. There is no failing pair to retune.
+
+The 26 November table scored the stylesheet inks (`#f1f5f9`, `#cbd5e1`, `#10b981`, `#94a3b8`, and the badge colors) against white. Those hex values live in `priv/static/styles.css`. The page does not load `design/tokens/build`. A light token set would not change this capture until the app imports it, and a real forced-colors mode would still replace those tokens with `Canvas` and `CanvasText`. System colors are not token values. The failure is outside the tokens.
+
+This re-run's full-page bitmaps are a poor picture of that override. `local-empty-360-light-forced-colors.png` is still mostly `#0f172a` and `#1e293b`, with white only in part of the bitmap. A viewport shot of the same mode is white and black. The axe JSON and `getComputedStyle` are the contrast evidence. The full-page file is not.
+
+`color-contrast` is incomplete for 14 nodes on the empty page, in ordinary light and in both forced-colors schemes. Two are the header gradient. Twelve are a pseudo-element. Those nodes are not violations. They are the same in the ordinary light capture, so forced colors did not add them.
+
 ## What this review did not verify
 
 The live model. Results screenshots are the client rendering a stubbed 200. The summary text, the three priorities, and the example product are the stub, not a model response.
@@ -134,4 +159,14 @@ Streaming. The client has no streaming state to capture.
 
 The product link destination. The stub points at an example address. The deployed capture used the same stub, so the deployed link was not the catalog.
 
-Whether forced-colors pixels match the colors axe computed. The axe JSON is the contrast evidence. The screenshot is a separate artifact. This review does not reconcile them pixel by pixel.
+Whether forced-colors pixels match the colors axe computed. On this re-run, `getComputedStyle` and a viewport shot show system black on white in light forced colors, and white on black in dark. The full-page bitmaps still contain the author slate. This review does not treat those bitmaps as the contrast measurement.
+
+A screen reader check of `aria-hidden` on `.stage-icon`. The guidance is written. The running button name still includes the icon and the VPD line. `local-focus-360-0-BUTTON--Seedling-VPD-0-4-0-8-kPa-68-77-F-70-80-.png` is that stop.
+
+The token focus ring on the running page. The app does not import the tokens. `local-focus-1280-5-BUTTON-Analyze.png` is the running Analyze control. The ring in the draft is `local-token-focus-1280-dark.png` and `local-token-focus-1280-light.png`, from a proof page that loads `build/dark.css` and `build/light.css`. Tab landed on Analyze. The computed shadow is `rgb(2, 44, 34) 0px 0px 0px 2px, rgb(16, 185, 129) 0px 0px 0px 5px` in dark, and `rgb(255, 255, 255) 0px 0px 0px 2px, rgb(4, 120, 87) 0px 0px 0px 5px` in light. Forced colors drops the shadow. The outline stays 3px, and the selected stage border is 4px. `local-token-focus-360-light-forced-colors.png`.
+
+Windows High Contrast outside Playwright. The engine here is Chromium with `forcedColors: active`.
+
+Deployed pages. This pass captured local only.
+
+768px forced colors, and browser zoom. The 200% shots are still CSS `zoom`.
