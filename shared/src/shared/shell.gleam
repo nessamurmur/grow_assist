@@ -69,12 +69,75 @@ pub fn view(model: Model) -> Element(Msg) {
   ])
 }
 
+fn missing_readings() -> String {
+  "Paste a few readings."
+}
+
+fn waiting_copy() -> Element(Msg) {
+  html.p([attribute.class("placeholder")], [
+    html.text("Your AI recommendations will appear here..."),
+  ])
+}
+
+fn readings_group(model: Model) -> Element(Msg) {
+  let error = readings_error(model)
+  html.div([attribute.class("form-group")], [
+    html.label([attribute.for("readings")], [html.text("Readings")]),
+    html.textarea(readings_attributes(model, error), ""),
+    readings_message(error),
+  ])
+}
+
+fn readings_error(model: Model) -> Option(String) {
+  case model.status {
+    Problem(message) ->
+      case message == missing_readings() {
+        True -> Some(message)
+        False -> None
+      }
+    _ -> None
+  }
+}
+
+fn readings_attributes(
+  model: Model,
+  error: Option(String),
+) -> List(attribute.Attribute(Msg)) {
+  let base = [
+    attribute.id("readings"),
+    attribute.placeholder(
+      "Paste a few readings, for example: 82 F, 68% RH, VPD 1.4",
+    ),
+    attribute.rows(8),
+    attribute.value(model.readings),
+    event.on_input(ReadingsChanged),
+  ]
+  case error {
+    None -> base
+    Some(_) -> [
+      attribute.attribute("aria-invalid", "true"),
+      attribute.attribute("aria-describedby", "readings-error"),
+      ..base
+    ]
+  }
+}
+
+fn readings_message(error: Option(String)) -> Element(Msg) {
+  case error {
+    None -> html.text("")
+    Some(message) ->
+      html.p([attribute.id("readings-error"), attribute.class("field-error")], [
+        html.text(message),
+      ])
+  }
+}
+
 fn ready(model: Model) -> Result(Nil, String) {
   case model.stage {
     None -> Error("Choose a growth stage.")
     Some(_) ->
       case string.trim(model.readings) == "" {
-        True -> Error("Paste a few readings.")
+        True -> Error(missing_readings())
         False ->
           case string.trim(model.api_key) == "" {
             True -> Error("Paste an API key.")
@@ -128,21 +191,7 @@ fn form(model: Model) -> Element(Msg) {
         "40-50% RH",
       ),
     ]),
-    html.div([attribute.class("form-group")], [
-      html.label([attribute.for("readings")], [html.text("Readings")]),
-      html.textarea(
-        [
-          attribute.id("readings"),
-          attribute.placeholder(
-            "Paste a few readings, for example: 82 F, 68% RH, VPD 1.4",
-          ),
-          attribute.rows(8),
-          attribute.value(model.readings),
-          event.on_input(ReadingsChanged),
-        ],
-        "",
-      ),
-    ]),
+    readings_group(model),
     html.div([attribute.class("form-group")], [
       html.label([attribute.for("api-key")], [html.text("API key")]),
       html.input([
@@ -214,23 +263,27 @@ fn selected(current: Option(Stage), stage: Stage) -> String {
 
 fn recommendations(model: Model) -> Element(Msg) {
   html.section([attribute.class("response-section")], [
-    html.h2([], [html.text("AI Recommendations")]),
+    html.h2(
+      [attribute.id("results-heading"), attribute.attribute("tabindex", "-1")],
+      [html.text("AI Recommendations")],
+    ),
     html.div([attribute.class("response-container")], [response_body(model)]),
   ])
 }
 
 fn response_body(model: Model) -> Element(Msg) {
   case model.status {
-    Waiting ->
-      html.p([attribute.class("placeholder")], [
-        html.text("Your AI recommendations will appear here..."),
-      ])
+    Waiting -> waiting_copy()
     Loading ->
       html.p([attribute.class("analysis-loading")], [
         html.text("Analyzing your tent…"),
       ])
     Problem(message) ->
-      html.p([attribute.class("analysis-error")], [html.text(message)])
+      case message == missing_readings() {
+        True -> waiting_copy()
+        False ->
+          html.p([attribute.class("analysis-error")], [html.text(message)])
+      }
     Ready(response) -> recommendation_result(response)
   }
 }

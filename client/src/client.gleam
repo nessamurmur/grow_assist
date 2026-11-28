@@ -32,8 +32,13 @@ fn update(
   let next = shell.apply(model, msg)
   case msg, next.status {
     shell.AnalyzeClicked, shell.Loading -> #(next, post_analyze(model))
+    shell.AnalyzeFinished(Ok(_)), _ -> #(next, focus_results())
     _, _ -> #(next, effect.none())
   }
+}
+
+fn focus_results() -> Effect(shell.Msg) {
+  effect.from(fn(_dispatch) { focus_results_heading() })
 }
 
 fn post_analyze(model: shell.Model) -> Effect(shell.Msg) {
@@ -108,3 +113,6 @@ fn error_text(body: String) -> String {
 
 @external(javascript, "./client_ffi.mjs", "pageOrigin")
 fn page_origin() -> String
+
+@external(javascript, "./client_ffi.mjs", "focusResultsHeading")
+fn focus_results_heading() -> Nil
