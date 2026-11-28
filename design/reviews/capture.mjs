@@ -272,6 +272,8 @@ function proofHtml(css) {
     </button>
     <button class="analyze" type="button">Analyze</button>
     <span id="highlight-probe" style="color: Highlight">Highlight</span>
+    <span id="gap-probe" style="color: var(--component-focus-gap)">Gap</span>
+    <span id="ring-probe" style="color: var(--component-focus-ring)">Ring</span>
   </main>
 </body>
 </html>`;
@@ -295,16 +297,9 @@ function assertFocusSample(name, info, forced) {
     }
     return;
   }
-  const gap = cssRgb(info.gap);
-  const ring = cssRgb(info.ring);
-  const shadow = `${gap} 0px 0px 0px 2px, ${ring} 0px 0px 0px 5px`;
+  const shadow = `${info.gap} 0px 0px 0px 2px, ${info.ring} 0px 0px 0px 5px`;
   if (info.boxShadow !== shadow) throw new Error(`${name} shadow ${info.boxShadow}`);
-  if (info.outlineColor !== ring) throw new Error(`${name} outline ${info.outlineColor}`);
-}
-
-function cssRgb(hex) {
-  const n = parseInt(hex.replace("#", ""), 16);
-  return `rgb(${(n >> 16) & 255}, ${(n >> 8) & 255}, ${n & 255})`;
+  if (info.outlineColor !== info.ring) throw new Error(`${name} outline ${info.outlineColor}`);
 }
 
 async function focusProof(browser) {
@@ -335,7 +330,8 @@ async function focusProof(browser) {
             const stageStyle = getComputedStyle(stage);
             const icon = stage.querySelector(".stage-icon");
             const highlight = getComputedStyle(document.querySelector("#highlight-probe")).color;
-            const root = getComputedStyle(document.documentElement);
+            const gap = getComputedStyle(document.querySelector("#gap-probe")).color;
+            const ring = getComputedStyle(document.querySelector("#ring-probe")).color;
             return {
               text: (el.innerText || "").replace(/\s+/g, " ").trim(),
               outlineStyle: style.outlineStyle,
@@ -348,8 +344,8 @@ async function focusProof(browser) {
               stageText: (stage.innerText || "").replace(/\s+/g, " ").trim(),
               stageHidden: icon?.getAttribute("aria-hidden") === "true",
               highlight,
-              gap: root.getPropertyValue("--component-focus-gap").trim(),
-              ring: root.getPropertyValue("--component-focus-ring").trim(),
+              gap,
+              ring,
             };
           });
           const name = `token-focus-${width}-${scheme}${suffix}`;

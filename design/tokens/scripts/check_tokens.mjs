@@ -435,12 +435,21 @@ function proveOwnProductAction(dark, light) {
   const darkCopy = clone(dark);
   const lightCopy = clone(light);
   paintOpaque(lookup(darkCopy, "semantic.color.productLink.action"), "#6ee7b7", [110 / 255, 231 / 255, 183 / 255]);
+  paintOpaque(lookup(darkCopy, "component.productLink.actionText"), "#022c22", [2 / 255, 44 / 255, 34 / 255]);
   paintOpaque(lookup(lightCopy, "semantic.color.productLink.action"), "#047857", [4 / 255, 120 / 255, 87 / 255]);
+  paintOpaque(lookup(lightCopy, "component.productLink.actionText"), "#ffffff", [1, 1, 1]);
   proveAnalyzeBackdrop(darkCopy);
-  const darkReport = contrastReport("dark", darkCopy);
-  const lightReport = contrastReport("light", lightCopy);
-  if (darkReport.failed || lightReport.failed) {
-    throw new Error(`own product action failed dark ${darkReport.failed} light ${lightReport.failed}`);
+  const darkRow = score(darkCopy, "action", "component.productLink.actionText", "component.productLink.action", 4.5, "text");
+  const lightRow = score(lightCopy, "action", "component.productLink.actionText", "component.productLink.action", 4.5, "text");
+  if (!darkRow.pass || darkRow.ratio !== 9.94) throw new Error(`own dark product action ${darkRow.ratio} pass ${darkRow.pass}`);
+  if (!lightRow.pass || lightRow.ratio !== 5.48) throw new Error(`own light product action ${lightRow.ratio} pass ${lightRow.pass}`);
+  const named = clone(light);
+  paintOpaque(lookup(named, "semantic.color.productLink.action"), "#ffffff", [1, 1, 1]);
+  paintOpaque(lookup(named, "component.productLink.actionText"), "#022c22", [2 / 255, 44 / 255, 34 / 255]);
+  const report = contrastReport("light", named);
+  const row = report.rows.find((item) => item.name === "product action label on fill");
+  if (report.failed || !row || row.ratio !== 15.15 || !row.pass) {
+    throw new Error(`named product action ${row?.ratio} failed ${report.failed}`);
   }
 }
 
