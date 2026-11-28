@@ -82,6 +82,7 @@ fn waiting_copy() -> Element(Msg) {
 fn readings_group(model: Model) -> Element(Msg) {
   let error = readings_error(model)
   html.div([attribute.class("form-group")], [
+    html.label([attribute.for("readings")], [html.text("Readings")]),
     html.textarea(readings_attributes(model, error), ""),
     readings_message(error),
   ])
@@ -104,7 +105,9 @@ fn readings_attributes(
 ) -> List(attribute.Attribute(Msg)) {
   let base = [
     attribute.id("readings"),
-    attribute.placeholder(""),
+    attribute.placeholder(
+      "Paste a few readings, for example: 82 F, 68% RH, VPD 1.4",
+    ),
     attribute.rows(8),
     attribute.value(model.readings),
     event.on_input(ReadingsChanged),
