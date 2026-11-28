@@ -34,6 +34,8 @@ pub fn shell_renders_grow_assist_test() {
   assert string.contains(does: html, contain: "Analyze")
   assert string.contains(does: html, contain: "API key")
   assert string.contains(does: html, contain: "Readings")
+  assert string.contains(does: html, contain: "Upload a CSV")
+  assert string.contains(does: html, contain: "readings-file")
 }
 
 pub fn shell_shows_a_recommendation_and_product_link_test() {
@@ -87,4 +89,22 @@ pub fn analyze_requires_a_stage_readings_and_key_test() {
   let model = shell.apply(model, shell.AnalyzeClicked)
   assert model.status == shell.Loading
   assert model.api_key == "secret"
+}
+
+pub fn analyze_accepts_a_csv_without_pasted_readings_test() {
+  let model =
+    shell.Model(
+      ..shell.initial_model(),
+      stage: Some(shell.Flowering),
+      api_key: "secret",
+    )
+  let blocked = shell.apply(model, shell.AnalyzeClicked)
+  let assert shell.Problem(message) = blocked.status
+  assert string.contains(does: message, contain: "Paste a few readings.")
+
+  let model = shell.apply(model, shell.CsvChosen("tent-readings.csv"))
+  let html = shell.view(model) |> element.to_string
+  assert string.contains(does: html, contain: "tent-readings.csv")
+  let model = shell.apply(model, shell.AnalyzeClicked)
+  assert model.status == shell.Loading
 }

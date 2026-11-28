@@ -29,6 +29,14 @@ fn update(
   model: shell.Model,
   msg: shell.Msg,
 ) -> #(shell.Model, Effect(shell.Msg)) {
+  let msg = case msg {
+    shell.CsvChosen(_) -> shell.CsvChosen(snapshot_readings_file())
+    shell.CsvCleared -> {
+      clear_readings_file()
+      msg
+    }
+    _ -> msg
+  }
   let next = shell.apply(model, msg)
   case msg, next.status {
     shell.AnalyzeClicked, shell.Loading -> #(next, post_analyze(model))
@@ -39,18 +47,10 @@ fn update(
 fn post_analyze(model: shell.Model) -> Effect(shell.Msg) {
   case model.stage {
     None -> effect.none()
-    Some(stage) -> {
-      let body =
-        json.object([
-          #("stage", json.string(shell.stage_wire(stage))),
-          #("readings", json.string(model.readings)),
-          #("api_key", json.string(model.api_key)),
-        ])
-        |> json.to_string
+    Some(stage) ->
       effect.from(fn(dispatch) {
         let _ =
-          fetch.send(analyze_request(body))
-          |> promise.try_await(fetch.read_text_body)
+          send(model, stage)
           |> promise.map(fn(result) { dispatch(finished(result)) })
           |> promise.rescue(fn(_) {
             dispatch(
@@ -61,8 +61,43 @@ fn post_analyze(model: shell.Model) -> Effect(shell.Msg) {
           })
         Nil
       })
-    }
   }
+}
+
+fn send(
+  model: shell.Model,
+  stage: shell.Stage,
+) -> promise.Promise(Result(response.Response(String), Nil)) {
+  case model.csv_name == "" {
+    True ->
+      fetch.send(analyze_request(json_body(model, stage)))
+      |> promise.try_await(fetch.read_text_body)
+      |> promise.map(fn(result) {
+        case result {
+          Ok(response) -> Ok(response)
+          Error(_) -> Error(Nil)
+        }
+      })
+    False ->
+      post_csv(
+        page_origin() <> "/analyze",
+        shell.stage_wire(stage),
+        model.api_key,
+      )
+      |> promise.map(fn(pair) {
+        let #(status, body) = pair
+        Ok(response.Response(status:, headers: [], body:))
+      })
+  }
+}
+
+fn json_body(model: shell.Model, stage: shell.Stage) -> String {
+  json.object([
+    #("stage", json.string(shell.stage_wire(stage))),
+    #("readings", json.string(model.readings)),
+    #("api_key", json.string(model.api_key)),
+  ])
+  |> json.to_string
 }
 
 fn analyze_request(body: String) -> request.Request(String) {
@@ -73,9 +108,7 @@ fn analyze_request(body: String) -> request.Request(String) {
   |> request.set_body(body)
 }
 
-fn finished(
-  result: Result(response.Response(String), fetch.FetchError),
-) -> shell.Msg {
+fn finished(result: Result(response.Response(String), Nil)) -> shell.Msg {
   let outcome = case result {
     Error(_) -> Error("The request did not reach the server.")
     Ok(response) ->
@@ -108,3 +141,16 @@ fn error_text(body: String) -> String {
 
 @external(javascript, "./client_ffi.mjs", "pageOrigin")
 fn page_origin() -> String
+
+@external(javascript, "./client_ffi.mjs", "snapshotReadingsFile")
+fn snapshot_readings_file() -> String
+
+@external(javascript, "./client_ffi.mjs", "clearReadingsFile")
+fn clear_readings_file() -> Nil
+
+@external(javascript, "./client_ffi.mjs", "postCsv")
+fn post_csv(
+  url: String,
+  stage: String,
+  api_key: String,
+) -> promise.Promise(#(Int, String))

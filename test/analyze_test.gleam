@@ -1,3 +1,4 @@
+import gleam/bit_array
 import gleam/http
 import gleam/json
 import gleam/string
@@ -70,6 +71,61 @@ pub fn post_analyze_rejects_a_blank_key_test() {
   assert string.contains(body, "API key")
 }
 
+const tent_csv =
+  "time,temperature,humidity,ppfd,soil_moisture,vpd
+2026-11-26T00:00:00Z,82,68,450,42,1.4
+2026-11-26T00:05:00Z,83,70,440,41,1.5
+"
+
+pub fn post_csv_returns_a_recommendation_test() {
+  let response =
+    router.handle(post_csv("test-key", tent_csv), fn(system, user, api_key) {
+      assert string.contains(system, "beginner-friendly")
+      assert string.contains(user, "Flowering")
+      assert string.contains(user, "temperature_f")
+      assert string.contains(user, "82")
+      assert string.contains(user, "1.4")
+      assert api_key == "test-key"
+      analysis_json.decode(fixture)
+    })
+  assert response.status == 200
+  let assert wisp.Text(body) = response.body
+  assert string.contains(body, "The tent is too humid for flowering.")
+  assert string.contains(
+    body,
+    "https://acinfinity.com/hydroponics-growers/hydrone-5",
+  )
+  assert !string.contains(body, "test-key")
+}
+
+pub fn csv_garbage_is_a_visible_error_test() {
+  let response =
+    router.handle(
+      post_csv("test-key", "hello\nthis is not a csv\n"),
+      fn(_system, _user, _api_key) { panic as "garbage was analyzed" },
+    )
+  assert response.status == 400
+  let assert wisp.Text(body) = response.body
+  assert string.contains(body, "temperature, humidity, light, or soil moisture")
+  let home = router.handle_request(simulate.request(http.Get, "/"))
+  assert home.status == 200
+}
+
+pub fn csv_upload_without_a_file_is_a_visible_error_test() {
+  let response =
+    router.handle(
+      simulate.request(http.Post, "/analyze")
+        |> simulate.multipart_body(
+          [#("stage", "flowering"), #("api_key", "test-key")],
+          [],
+        ),
+      fn(_system, _user, _api_key) { panic as "a missing file was analyzed" },
+    )
+  assert response.status == 400
+  let assert wisp.Text(body) = response.body
+  assert string.contains(body, "Choose a CSV file.")
+}
+
 pub fn canary_key_is_absent_from_logs_and_the_response_test() {
   let #(response, logs) =
     req_llm.capture_logs(fn() {
@@ -85,6 +141,33 @@ pub fn canary_key_is_absent_from_logs_and_the_response_test() {
   assert !string.contains(body, canary)
   assert string.contains(body, "[redacted]")
   assert !string.contains(logs, canary)
+}
+
+pub fn canary_key_is_absent_from_the_csv_response_and_logs_test() {
+  let #(response, logs) =
+    req_llm.capture_logs(fn() {
+      router.handle(post_csv(canary, tent_csv), fn(_system, _user, api_key) {
+        Error("provider failed with " <> api_key)
+      })
+    })
+  assert response.status == 502
+  let assert wisp.Text(body) = response.body
+  assert !string.contains(body, canary)
+  assert string.contains(body, "[redacted]")
+  assert !string.contains(logs, canary)
+}
+
+fn post_csv(api_key: String, csv: String) -> wisp.Request {
+  let file =
+    simulate.FileUpload(
+      file_name: "tent.csv",
+      content_type: "text/csv",
+      content: bit_array.from_string(csv),
+    )
+  simulate.request(http.Post, "/analyze")
+  |> simulate.multipart_body([#("stage", "flowering"), #("api_key", api_key)], [
+    #("csv", file),
+  ])
 }
 
 fn post_analyze(api_key: String, readings: String) -> wisp.Request {

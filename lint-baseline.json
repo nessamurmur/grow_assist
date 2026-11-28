@@ -1,10 +1,10 @@
 {
   "root": {
-    "total": 15,
+    "total": 13,
     "rules": {
       "assert_ok_pattern": 1,
       "stringly_typed_error": 8,
-      "thrown_away_error": 6
+      "thrown_away_error": 4
     }
   },
   "shared": {

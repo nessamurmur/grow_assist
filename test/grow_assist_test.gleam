@@ -38,6 +38,8 @@ pub fn home_page_returns_shell_test() {
   assert string.contains(does: html, contain: "Analyze")
   assert string.contains(does: html, contain: "API key")
   assert string.contains(does: html, contain: "Readings")
+  assert string.contains(does: html, contain: "Upload a CSV")
+  assert string.contains(does: html, contain: "readings-file")
 }
 
 pub fn unknown_path_is_not_found_test() {

@@ -1,8 +1,10 @@
 import gleam/dynamic/decode
 import gleam/http
+import gleam/http/request
 import gleam/http/response
 import gleam/int
 import gleam/json
+import gleam/list
 import gleam/option.{None, Some}
 import gleam/result
 import gleam/string
@@ -12,6 +14,7 @@ import wisp.{type Request, type Response}
 import grow_assist/analyze
 import grow_assist/assets
 import grow_assist/page
+import grow_assist/readings_csv
 import grow_assist/req_llm
 import shared/analysis_json
 
@@ -41,12 +44,64 @@ pub fn handle(req: Request, recommend: analyze.Analyzer) -> Response {
 }
 
 fn analyze_request(req: Request, recommend: analyze.Analyzer) -> Response {
+  case multipart(req) {
+    True -> csv_analyze(req, recommend)
+    False -> json_analyze(req, recommend)
+  }
+}
+
+fn multipart(req: Request) -> Bool {
+  case request.get_header(req, "content-type") {
+    Ok(value) ->
+      string.starts_with(string.lowercase(value), "multipart/form-data")
+    Error(Nil) -> False
+  }
+}
+
+fn json_analyze(req: Request, recommend: analyze.Analyzer) -> Response {
   use body <- wisp.require_json(req)
   case decode.run(body, request_decoder()) {
     Error(_) ->
       json_error("Send a growth stage, readings, and an API key.", 400)
     Ok(#(stage, readings, api_key)) ->
       complete(stage, readings, api_key, recommend)
+  }
+}
+
+// The CSV is a file part, so Wisp streams it to a temp file and deletes that
+// file when this handler returns. The API key is a text field and stays in
+// memory. Neither is logged.
+fn csv_analyze(req: Request, recommend: analyze.Analyzer) -> Response {
+  let req = wisp.set_max_files_size(req, 1_048_576)
+  use form <- wisp.require_form(req)
+  case list.key_find(form.files, "csv") {
+    Error(Nil) -> json_error("Choose a CSV file.", 400)
+    Ok(file) ->
+      case readings_csv.parse_file(file.path) {
+        Error(error) -> json_error(csv_problem(error), 400)
+        Ok(rows) ->
+          complete(
+            form_value(form.values, "stage"),
+            readings_csv.render(rows),
+            form_value(form.values, "api_key"),
+            recommend,
+          )
+      }
+  }
+}
+
+fn form_value(values: List(#(String, String)), name: String) -> String {
+  list.key_find(values, name)
+  |> result.unwrap("")
+}
+
+fn csv_problem(error: readings_csv.CsvError) -> String {
+  case error {
+    readings_csv.Unreadable -> "That file is not a readable CSV."
+    readings_csv.NoReadings -> "That CSV has no readings."
+    readings_csv.NoKnownColumn ->
+      "That CSV needs a temperature, humidity, light, or soil moisture column."
+    readings_csv.TooLarge -> "That CSV is too large."
   }
 }
 
@@ -70,7 +125,7 @@ fn complete(
         True -> json_error("Paste a few readings.", 400)
         False ->
           case analyze.canonical_stage(stage) {
-            Error(_) ->
+            Error(Nil) ->
               json_error("Choose seedling, vegetation, or flowering.", 400)
             Ok(stage) ->
               dispatch(stage, string.trim(readings), api_key, recommend)
@@ -116,7 +171,7 @@ fn drop_file_body(resp: Response) -> Response {
       let resp = case representation_length(path, offset, limit) {
         Ok(length) ->
           response.set_header(resp, "content-length", int.to_string(length))
-        Error(_) -> resp
+        Error(Nil) -> resp
       }
       wisp.set_body(resp, wisp.Text(""))
     }
