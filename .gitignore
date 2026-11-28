@@ -8,5 +8,10 @@ erl_crash.dump
 .lustre/
 .playwright-mcp/
 priv/static/client.js
+a11y/node_modules/
+a11y/artifacts/
+a11y/test-results/
+a11y/playwright-report/
+a11y/.lighthouseci/
 elixir/deps
 elixir/_build

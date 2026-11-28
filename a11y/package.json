@@ -1,0 +1,14 @@
+{
+  "name": "grow-assist-a11y",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "playwright test",
+    "lighthouse": "lhci autorun"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "^4.11.0",
+    "@lhci/cli": "^0.15.1",
+    "@playwright/test": "^1.57.0"
+  }
+}

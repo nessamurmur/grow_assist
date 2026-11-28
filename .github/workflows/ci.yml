@@ -88,3 +88,67 @@ jobs:
         run: |
           mix deps.get
           mix hex.audit
+
+  a11y:
+    name: a11y
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Gleam, OTP, Elixir, and rebar3
+        uses: erlef/setup-beam@v1
+        with:
+          otp-version: "29.1.1"
+          elixir-version: "1.20.5"
+          gleam-version: "1.19.2"
+          rebar3-version: "3.28.0"
+          version-type: strict
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: a11y/package-lock.json
+
+      - name: Cache package builds
+        uses: actions/cache@v4
+        with:
+          path: |
+            build/packages
+            shared/build/packages
+            client/build/packages
+          key: otp-29.1.1-elixir-1.20.5-gleam-1.19.2-a11y-${{ hashFiles('manifest.toml', 'shared/manifest.toml', 'client/manifest.toml') }}
+          restore-keys: |
+            otp-29.1.1-elixir-1.20.5-gleam-1.19.2-a11y-
+
+      - name: Install Playwright Chromium
+        working-directory: a11y
+        run: |
+          npm ci
+          npx playwright install --with-deps chromium
+
+      - name: Axe gate and Lighthouse
+        run: scripts/a11y.sh
+
+      - name: Upload axe JSON
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: axe-results
+          path: a11y/artifacts/axe
+
+      - name: Upload Lighthouse reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lighthouse-reports
+          path: a11y/artifacts/lighthouse
+
+      - name: Upload key-view screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: a11y-screenshots
+          path: a11y/artifacts/screenshots
