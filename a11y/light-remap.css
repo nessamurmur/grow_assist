@@ -1,0 +1,48 @@
+:root {
+  --background: var(--semantic-color-shell-canvas);
+  --surface: var(--semantic-color-shell-surface);
+  --surface-hover: var(--semantic-color-shell-raised);
+  --text-primary: var(--semantic-color-shell-text);
+  --text-secondary: var(--semantic-color-shell-textSecondary);
+  --text-muted: var(--semantic-color-shell-muted);
+  --border: var(--semantic-color-shell-border);
+  --primary: var(--semantic-color-analyze-fill);
+  --primary-hover: var(--semantic-color-stage-vpd);
+  --primary-light: var(--semantic-color-summary-surface);
+  --shadow: rgba(15, 23, 42, 0.12);
+}
+
+.analysis-error,
+.field-error {
+  color: var(--semantic-color-status-problem);
+}
+
+.priority-badge.priority-high {
+  background: var(--component-priority-high-badgeSurface);
+  color: var(--component-priority-high-badgeText);
+  border-color: var(--component-priority-high-accent);
+}
+
+.priority-badge.priority-medium {
+  background: var(--component-priority-medium-badgeSurface);
+  color: var(--component-priority-medium-badgeText);
+  border-color: var(--component-priority-medium-accent);
+}
+
+.priority-badge.priority-low {
+  background: var(--component-priority-low-badgeSurface);
+  color: var(--component-priority-low-badgeText);
+  border-color: var(--component-priority-low-accent);
+}
+
+.recommendation-card.priority-high {
+  border-left-color: var(--component-priority-high-accent);
+}
+
+.recommendation-card.priority-medium {
+  border-left-color: var(--component-priority-medium-accent);
+}
+
+.recommendation-card.priority-low {
+  border-left-color: var(--component-priority-low-accent);
+}

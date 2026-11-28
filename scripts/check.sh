@@ -44,7 +44,7 @@ allowed = {}
 for name in known:
     path = "gleam.toml" if name == "root" else "%s/gleam.toml" % name
     allowed[path] = name
-skip = {"build", "_build", "deps", ".git"}
+skip = {"build", "_build", "deps", ".git", "node_modules"}
 found = []
 for dirpath, dirnames, filenames in os.walk(root):
     dirnames[:] = [name for name in dirnames if name not in skip]

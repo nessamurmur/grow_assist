@@ -72,6 +72,41 @@ pub fn shell_shows_a_recommendation_and_product_link_test() {
   assert string.contains(does: html, contain: "View product")
 }
 
+pub fn empty_readings_error_sits_beside_the_field_test() {
+  let model = shell.Model(..shell.initial_model(), stage: Some(shell.Seedling))
+  let model = shell.apply(model, shell.AnalyzeClicked)
+  let html = shell.view(model) |> element.to_string
+  assert string.contains(does: html, contain: "id=\"readings-error\"")
+  assert string.contains(does: html, contain: "Paste a few readings.")
+  assert string.contains(
+    does: html,
+    contain: "aria-describedby=\"readings-error\"",
+  )
+  assert string.contains(does: html, contain: "aria-invalid=\"true\"")
+  assert !string.contains(does: html, contain: "analysis-error")
+}
+
+pub fn server_problem_stays_beside_analyze_and_keeps_readings_test() {
+  let model =
+    shell.Model(
+      stage: Some(shell.Seedling),
+      readings: "82 F, 68% RH",
+      api_key: "secret",
+      status: shell.Problem("The analysis request failed."),
+    )
+  let html = shell.view(model) |> element.to_string
+  assert string.contains(does: html, contain: "class=\"analysis-error\"")
+  assert string.contains(does: html, contain: "The analysis request failed.")
+  assert string.contains(does: html, contain: "82 F, 68% RH")
+  assert !string.contains(does: html, contain: "readings-error")
+}
+
+pub fn results_heading_is_in_the_document_test() {
+  let html = shell.view(shell.initial_model()) |> element.to_string
+  assert string.contains(does: html, contain: "id=\"results-heading\"")
+  assert string.contains(does: html, contain: "tabindex=\"-1\"")
+}
+
 pub fn analyze_requires_a_stage_readings_and_key_test() {
   let model = shell.apply(shell.initial_model(), shell.AnalyzeClicked)
   let assert shell.Problem(message) = model.status

@@ -116,6 +116,16 @@ Expect `HTTP/1.1 200` and an HTML document titled Grow Assist. `GET /` is the sh
 
 The HTML references `/static/client.js`. After the bundle step above, that path is served. Stop the server when you are done.
 
+## Accessibility gate
+
+`scripts/a11y.sh` is the browser gate. Run it from the repository root after the toolchain in Prerequisites is on `PATH`. The script also needs Node 22. It installs Playwright's Chromium on the first run.
+
+```sh
+scripts/a11y.sh
+```
+
+The script builds `priv/static/client.js`, starts `gleam run` on port 8080 when that port is closed, then runs `@axe-core/playwright` and `@lhci/cli`. It does not call a model and it does not read an API key. Axe JSON, screenshots, and Lighthouse reports are written to `a11y/artifacts/`. The `a11y` job in [`.github/workflows/ci.yml`](../../../.github/workflows/ci.yml) runs this script. [Ready to merge](../../../CONTRIBUTING.md#ready-to-merge) states the bar: 0 serious or critical axe violations. Lighthouse asserts `categories:accessibility` at minScore 1.0 on `/` only, and that score does not waive an axe violation.
+
 A mocked analyze, without an Ollama key, is the root test `post_analyze_returns_a_recommendation_test`. It posts a stage, readings, and a key to the route with a stubbed wrapper. The canary test in the same file posts a distinctive key and checks that the key is absent from the response and from the logger output captured around the request.
 
 ## Docker image

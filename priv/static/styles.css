@@ -144,8 +144,18 @@ button.stage-card {
     appearance: none;
 }
 
-.analysis-error {
+.analysis-error,
+.field-error {
     color: #fca5a5;
+}
+
+.field-error {
+    margin-top: 0.5rem;
+}
+
+#results-heading:focus {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
 }
 
 .analysis-loading {
