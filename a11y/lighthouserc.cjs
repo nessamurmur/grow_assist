@@ -9,6 +9,8 @@ module.exports = {
       ...(chromePath ? { chromePath } : {}),
       settings: {
         onlyCategories: ["accessibility"],
+        // GitHub-hosted Ubuntu blocks Chromium's user namespace sandbox.
+        chromeFlags: "--no-sandbox --disable-dev-shm-usage",
       },
     },
     assert: {
