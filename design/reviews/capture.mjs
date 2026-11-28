@@ -264,11 +264,40 @@ function proofHtml(css) {
 </head>
 <body>
   <main>
-    <button class="stage" type="button" data-selected="true"><span class="stage-icon" aria-hidden="true">🌱</span> Seedling</button>
+    <button class="stage" type="button" data-selected="true" aria-label="Seedling">
+      <span class="stage-icon" aria-hidden="true">🌱</span>
+      <span class="stage-name">Seedling</span>
+      <span class="stage-vpd">VPD 0.4-0.8 kPa</span>
+      <span class="stage-details">68-77°F 70-80% RH</span>
+    </button>
     <button class="analyze" type="button">Analyze</button>
+    <span id="highlight-probe" style="color: Highlight">Highlight</span>
   </main>
 </body>
 </html>`;
+}
+
+function assertFocusSample(name, info, forced) {
+  if (info.text !== "Analyze") throw new Error(`${name} focused ${info.text}`);
+  if (info.stageName !== "Seedling") throw new Error(`${name} stage name ${info.stageName}`);
+  if (!info.stageHidden) throw new Error(`${name} stage icon is in the name`);
+  for (const reading of ["VPD 0.4-0.8 kPa", "68-77°F", "70-80% RH"]) {
+    if (!info.stageText.includes(reading)) throw new Error(`${name} stage text missing ${reading}`);
+  }
+  if (info.outlineStyle !== "solid" || info.outlineWidth !== "3px") {
+    throw new Error(`${name} outline ${info.outlineStyle} ${info.outlineWidth}`);
+  }
+  if (forced) {
+    if (info.boxShadow !== "none") throw new Error(`${name} shadow ${info.boxShadow}`);
+    if (info.outlineColor !== info.highlight) throw new Error(`${name} outline ${info.outlineColor}`);
+    if (info.stageBorderWidth !== "4px" || info.stageBorderColor !== info.highlight) {
+      throw new Error(`${name} stage border ${info.stageBorderWidth} ${info.stageBorderColor}`);
+    }
+    return;
+  }
+  if (!info.boxShadow.includes("0px 0px 0px 2px") || !info.boxShadow.includes("0px 0px 0px 5px")) {
+    throw new Error(`${name} shadow ${info.boxShadow}`);
+  }
 }
 
 async function focusProof(browser) {
@@ -282,9 +311,12 @@ async function focusProof(browser) {
     for (const scheme of ["dark", "light"]) {
       for (const forced of [false, true]) {
         const suffix = forced ? "-forced-colors" : "";
-        const { context, page } = await open(browser, width, scheme, {
+        const context = await browser.newContext({
+          viewport: { width, height: 900 },
+          colorScheme: scheme,
           forcedColors: forced ? "active" : undefined,
         });
+        const page = await context.newPage();
         try {
           await page.setContent(proofHtml(cssFor[scheme]), { waitUntil: "domcontentloaded" });
           await page.keyboard.press("Tab");
@@ -294,6 +326,8 @@ async function focusProof(browser) {
             const style = getComputedStyle(el);
             const stage = document.querySelector(".stage");
             const stageStyle = getComputedStyle(stage);
+            const icon = stage.querySelector(".stage-icon");
+            const highlight = getComputedStyle(document.querySelector("#highlight-probe")).color;
             return {
               text: (el.innerText || "").replace(/\s+/g, " ").trim(),
               outlineStyle: style.outlineStyle,
@@ -302,12 +336,16 @@ async function focusProof(browser) {
               boxShadow: style.boxShadow,
               stageBorderWidth: stageStyle.borderTopWidth,
               stageBorderColor: stageStyle.borderTopColor,
+              stageName: stage.getAttribute("aria-label") || "",
+              stageText: (stage.innerText || "").replace(/\s+/g, " ").trim(),
+              stageHidden: icon?.getAttribute("aria-hidden") === "true",
+              highlight,
             };
           });
           const name = `token-focus-${width}-${scheme}${suffix}`;
           await page.screenshot({ path: file(`${name}.png`) });
           samples.push({ name, ...info });
-          if (info.text !== "Analyze") throw new Error(`${name} focused ${info.text}`);
+          assertFocusSample(name, info, forced);
         } finally {
           await context.close();
         }
@@ -334,12 +372,12 @@ async function main() {
   let scanned = false;
   try {
     for (const state of states.filter((state) => !only || only.includes(state))) {
-      scanned = true;
       for (const width of widths) {
         for (const scheme of schemes) {
           const name = `${state}-${width}-${scheme}`;
           try {
             const violations = await captureState(browser, state, width, scheme, "");
+            scanned = true;
             rows.push(...tally(`${label}-${name}`, violations));
             console.log("ok", name, "violations", violations.length);
           } catch (error) {
@@ -350,12 +388,12 @@ async function main() {
       }
     }
     for (const state of ["empty", "filled", "results"].filter((state) => !only || only.includes(state))) {
-      scanned = true;
       for (const width of [360, 1280]) {
         for (const scheme of schemes) {
           const name = `${state}-${width}-${scheme}-zoom200`;
           try {
             const violations = await captureState(browser, state, width, scheme, "-zoom200");
+            scanned = true;
             rows.push(...tally(`${label}-${name}`, violations));
             console.log("ok", name);
           } catch (error) {
@@ -367,12 +405,12 @@ async function main() {
     }
     for (const suffix of ["-reduced-motion", "-forced-colors"]) {
       for (const state of ["empty", "results"].filter((state) => !only || only.includes(state))) {
-        scanned = true;
         for (const width of [360, 1280]) {
           for (const scheme of schemes) {
             const name = `${state}-${width}-${scheme}${suffix}`;
             try {
               const violations = await captureState(browser, state, width, scheme, suffix);
+              scanned = true;
               rows.push(...tally(`${label}-${name}`, violations));
               console.log("ok", name);
             } catch (error) {
@@ -383,7 +421,7 @@ async function main() {
         }
       }
     }
-    const wantKeyboard = !only || only.includes("keyboard") || only.includes("focus");
+    const wantKeyboard = !only || only.includes("keyboard");
     for (const width of wantKeyboard ? [360, 1280] : []) {
       try {
         await keyboardWalk(browser, width);

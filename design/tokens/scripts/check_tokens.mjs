@@ -191,11 +191,17 @@ function paintOver(paint, bgRgb) {
   return composite(paint.rgb, paint.alpha, bgRgb);
 }
 
-const badgeUnder = "semantic.color.shell.raised";
+const shellCanvas = "semantic.color.shell.canvas";
+const shellSurface = "semantic.color.shell.surface";
+const raisedCard = "semantic.color.shell.raised";
 const underlay = {
-  "semantic.color.priority.high.badgeSurface": badgeUnder,
-  "semantic.color.priority.medium.badgeSurface": badgeUnder,
-  "semantic.color.priority.low.badgeSurface": badgeUnder,
+  "semantic.color.priority.high.badgeSurface": raisedCard,
+  "semantic.color.priority.medium.badgeSurface": raisedCard,
+  "semantic.color.priority.low.badgeSurface": raisedCard,
+  "component.priority.high.badgeSurface": raisedCard,
+  "component.priority.medium.badgeSurface": raisedCard,
+  "component.priority.low.badgeSurface": raisedCard,
+  "semantic.color.analyze.fill": shellSurface,
 };
 
 function aliasTargets(tree, path) {
@@ -214,11 +220,8 @@ function aliasTargets(tree, path) {
   return found;
 }
 
-function underPath(tree, path) {
-  for (const target of aliasTargets(tree, path)) {
-    if (underlay[target]) return underlay[target];
-  }
-  return "semantic.color.shell.canvas";
+function underPath(_tree, path) {
+  return underlay[path] ?? shellCanvas;
 }
 
 function backdrop(tree, path, paint) {
@@ -399,6 +402,24 @@ function proveBadgeUnderlay(tree) {
   if (row.ratio === onCanvas) throw new Error("badge underlay used the canvas");
 }
 
+function withAnalyzeFill(tree, alpha) {
+  const copy = clone(tree);
+  const fill = lookup(copy, "semantic.color.analyze.fill");
+  fill.$type = "color";
+  fill.$value = translucent("#6ee7b7", [110 / 255, 231 / 255, 183 / 255], alpha);
+  return copy;
+}
+
+function proveAnalyzeBackdrop(tree) {
+  const at06 = withAnalyzeFill(tree, 0.6);
+  const label = score(at06, "label", "semantic.color.analyze.text", "semantic.color.analyze.fill", 4.5, "text");
+  const action = score(at06, "action", "component.productLink.actionText", "component.productLink.action", 4.5, "text");
+  if (label.ratio !== 4.58 || !label.pass) throw new Error(`analyze label ${label.ratio} pass ${label.pass}`);
+  if (action.ratio !== 4.2 || action.pass) throw new Error(`product action ${action.ratio} pass ${action.pass}`);
+  const gap = score(withAnalyzeFill(tree, 0.42), "gap", "semantic.color.focus.gap", "semantic.color.analyze.fill", 3, "ui");
+  if (gap.ratio !== 3.02 || !gap.pass) throw new Error(`focus gap ${gap.ratio} pass ${gap.pass}`);
+}
+
 function requireDeclaredBackground(tree) {
   const used = new Set();
   for (const row of pairs) {
@@ -491,6 +512,7 @@ function main() {
   proveAliasCoverage(lightTree);
   proveBadgeUnderlay(darkTree);
   proveBadgeUnderlay(lightTree);
+  proveAnalyzeBackdrop(darkTree);
   requireDeclaredBackground(darkTree);
   requireDeclaredBackground(lightTree);
   mkdirSync(buildDir, { recursive: true });
