@@ -21,19 +21,27 @@ pub type Status {
 }
 
 pub type Model {
-  Model(stage: Option(Stage), readings: String, api_key: String, status: Status)
+  Model(
+    stage: Option(Stage),
+    readings: String,
+    csv_name: String,
+    api_key: String,
+    status: Status,
+  )
 }
 
 pub type Msg {
   StageChosen(Stage)
   ReadingsChanged(String)
+  CsvChosen(String)
+  CsvCleared
   KeyChanged(String)
   AnalyzeClicked
   AnalyzeFinished(Result(AnalysisResponse, String))
 }
 
 pub fn initial_model() -> Model {
-  Model(stage: None, readings: "", api_key: "", status: Waiting)
+  Model(stage: None, readings: "", csv_name: "", api_key: "", status: Waiting)
 }
 
 pub fn stage_wire(stage: Stage) -> String {
@@ -50,6 +58,8 @@ pub fn apply(model: Model, msg: Msg) -> Model {
   case msg {
     StageChosen(stage) -> Model(..model, stage: Some(stage))
     ReadingsChanged(readings) -> Model(..model, readings:)
+    CsvChosen(csv_name) -> Model(..model, csv_name:)
+    CsvCleared -> Model(..model, csv_name: "")
     KeyChanged(api_key) -> Model(..model, api_key:)
     AnalyzeClicked ->
       case ready(model) {
@@ -73,7 +83,7 @@ fn ready(model: Model) -> Result(Nil, String) {
   case model.stage {
     None -> Error("Choose a growth stage.")
     Some(_) ->
-      case string.trim(model.readings) == "" {
+      case string.trim(model.readings) == "" && model.csv_name == "" {
         True -> Error("Paste a few readings.")
         False ->
           case string.trim(model.api_key) == "" {
@@ -128,6 +138,7 @@ fn form(model: Model) -> Element(Msg) {
         "40-50% RH",
       ),
     ]),
+    csv_upload(model),
     html.div([attribute.class("form-group")], [
       html.label([attribute.for("readings")], [html.text("Readings")]),
       html.textarea(
@@ -175,6 +186,59 @@ fn form(model: Model) -> Element(Msg) {
       ],
     ),
   ])
+}
+
+fn csv_upload(model: Model) -> Element(Msg) {
+  html.div([], [
+    html.div([attribute.class("file-upload-wrapper")], [
+      html.input([
+        attribute.id("readings-file"),
+        attribute.class("file-input"),
+        attribute.type_("file"),
+        attribute.name("csv"),
+        attribute.accept([".csv", "text/csv"]),
+        event.on_change(CsvChosen),
+      ]),
+      html.label(
+        [
+          attribute.for("readings-file"),
+          attribute.class("file-upload-label"),
+        ],
+        [
+          html.div([attribute.class("file-upload-icon")], [html.text("📄")]),
+          html.div([attribute.class("file-upload-text")], [
+            html.span([attribute.class("file-upload-title")], [
+              html.text("Upload a CSV"),
+            ]),
+            html.span([attribute.class("file-upload-hint")], [
+              html.text(
+                "Temperature, humidity, light or PPFD, and soil moisture. Extra columns are kept.",
+              ),
+            ]),
+          ]),
+        ],
+      ),
+    ]),
+    chosen_file(model),
+  ])
+}
+
+fn chosen_file(model: Model) -> Element(Msg) {
+  case model.csv_name == "" {
+    True -> html.text("")
+    False ->
+      html.div([attribute.class("file-name-display has-file")], [
+        html.span([], [html.text(model.csv_name)]),
+        html.button(
+          [
+            attribute.class("file-clear"),
+            attribute.type_("button"),
+            event.on_click(CsvCleared),
+          ],
+          [html.text("Remove")],
+        ),
+      ])
+  }
 }
 
 fn stage_card(

@@ -321,6 +321,20 @@ textarea::placeholder {
     color: var(--primary);
     background: rgba(16, 185, 129, 0.1);
     border: 1px solid var(--primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+}
+
+button.file-clear {
+    font: inherit;
+    color: var(--text-secondary);
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 0.2rem 0.7rem;
+    cursor: pointer;
 }
 
 .file-info {

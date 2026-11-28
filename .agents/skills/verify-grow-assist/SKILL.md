@@ -85,7 +85,7 @@ GitHub Actions runs that same command once for the root package, once for `share
 
 `client/` is the JavaScript target and runs its tests on Node.
 
-The root tests are the mocked wrapper path. They do not call Ollama. They cover a raise becoming `Error(...)` without a process crash, an atom-key option map for hosted Ollama (`inkling-2-small` at `https://ollama.com/v1`), a mocked object decoding to the analysis type, and a canary key that must not appear in the captured server logs or the HTTP body. `shared/` qcheck covers the JSON decoder: arbitrary text decodes only when the summary, 2 or 3 recommendations, and product-link rules hold, and generated valid responses round-trip.
+The root tests are the mocked wrapper path. They do not call Ollama. They cover a raise becoming `Error(...)` without a process crash, an atom-key option map for hosted Ollama (`inkling-2-small` at `https://ollama.com/v1`), a mocked object decoding to the analysis type, and a canary key that must not appear in the captured server logs or the HTTP body. A multipart CSV upload is covered the same way: the fixture shape returns a recommendation, a bad file is a 400, and the canary key stays out of the logs and the response. Root qcheck covers the CSV parser. Generated readings round-trip, and digit strings or unknown columns are rejected. `shared/` qcheck covers the JSON decoder: arbitrary text decodes only when the summary, 2 or 3 recommendations, and product-link rules hold, and generated valid responses round-trip.
 
 ## Client bundle
 
@@ -112,7 +112,7 @@ The server listens on `0.0.0.0` and port 8080, or on `PORT` when that variable i
 curl -fsS -D - "http://127.0.0.1:${PORT:-8080}/" -o /tmp/grow-assist.html
 ```
 
-Expect `HTTP/1.1 200` and an HTML document titled Grow Assist. `GET /` is the shell page, with a growth stage, a readings box, an API key field, and an Analyze button. Paths under `/static` serve files from `priv/static`. `GET /analyze` is a 404. `POST /analyze` is the JSON analyze route.
+Expect `HTTP/1.1 200` and an HTML document titled Grow Assist. `GET /` is the shell page, with a growth stage, a CSV upload, a readings box, an API key field, and an Analyze button. Paths under `/static` serve files from `priv/static`. `GET /analyze` is a 404. `POST /analyze` accepts the JSON paste body and a multipart CSV upload.
 
 The HTML references `/static/client.js`. After the bundle step above, that path is served. Stop the server when you are done.
 
@@ -143,7 +143,27 @@ Expect `HTTP/1.1 200`. Then open `http://127.0.0.1:8080/`, choose a stage, paste
 GROW_ASSIST_OLLAMA_TEST_KEY=... scripts/live-check.sh http://127.0.0.1:8080
 ```
 
-The script prints the JSON response, never the key, and exits non-zero unless the body has a summary, 2 or 3 recommendations, and at least one product link. The same command with `https://grow-assist.fly.dev` is the live user path after a deploy. There is no key in this environment, so that live call is for the person who holds the key.
+The script prints the JSON response, never the key, and exits non-zero unless the body has a summary, 2 or 3 recommendations, and at least one product link. The same command with `https://grow-assist.fly.dev` is the live paste path after a deploy. There is no key in this environment, so that live call is for the person who holds the key.
+
+A second argument uploads a CSV on the same route. The fixture is `priv/fixtures/tent-readings.csv`. Wisp streams that file to a temporary disk file, the server parses it, and the temporary file is deleted when the handler returns. The API key stays a form field in memory.
+
+```sh
+GROW_ASSIST_OLLAMA_TEST_KEY=... scripts/live-check.sh http://127.0.0.1:8080 priv/fixtures/tent-readings.csv
+```
+
+A bad file does not need a real key. It returns a JSON error and the process keeps serving:
+
+```sh
+printf 'not a csv\n' > /tmp/grow-assist-bad.txt
+curl -sS -D - -o /tmp/grow-assist-bad.json \
+  -F 'stage=flowering' \
+  -F 'api_key=example' \
+  -F 'csv=@/tmp/grow-assist-bad.txt;filename=bad.txt;type=text/plain' \
+  "http://127.0.0.1:${PORT:-8080}/analyze"
+curl -fsS -o /dev/null -D - "http://127.0.0.1:${PORT:-8080}/"
+```
+
+Expect `HTTP/1.1 400` and a message that names temperature, humidity, light, or soil moisture. The following `GET /` is `HTTP/1.1 200`.
 
 ## Live deploy
 
@@ -156,6 +176,7 @@ curl -fsS -D - --retry 5 --retry-all-errors --max-time 90 \
   https://grow-assist.fly.dev/static/client.js -o /dev/null
 fly status -a grow-assist
 GROW_ASSIST_OLLAMA_TEST_KEY=... scripts/live-check.sh https://grow-assist.fly.dev
+GROW_ASSIST_OLLAMA_TEST_KEY=... scripts/live-check.sh https://grow-assist.fly.dev priv/fixtures/tent-readings.csv
 ```
 
 `fly status` needs a logged-in `fly` (or `flyctl`) that can read the `grow-assist` app. The machine should be in region `yyz`. `live-check.sh` is the live user path: one flowering analyze with a small readings sample. It does not print the key. The machine stays `shared-cpu-1x` with 256 MB unless an analyze run runs out of memory.
@@ -164,4 +185,4 @@ GROW_ASSIST_OLLAMA_TEST_KEY=... scripts/live-check.sh https://grow-assist.fly.de
 
 Later M1 tickets extend this skill as features land. Add the new check in the same change as the feature, once that feature is in the tree.
 
-CSV upload and a settings screen for provider and model are not steps above yet.
+A settings screen for provider and model is not a step above yet.
