@@ -410,14 +410,38 @@ function withAnalyzeFill(tree, alpha) {
   return copy;
 }
 
+function pointProductActionAtFill(tree) {
+  const action = lookup(tree, "component.productLink.action");
+  action.$value = "{semantic.color.analyze.fill}";
+}
+
 function proveAnalyzeBackdrop(tree) {
   const at06 = withAnalyzeFill(tree, 0.6);
+  pointProductActionAtFill(at06);
   const label = score(at06, "label", "semantic.color.analyze.text", "semantic.color.analyze.fill", 4.5, "text");
   const action = score(at06, "action", "component.productLink.actionText", "component.productLink.action", 4.5, "text");
   if (label.ratio !== 4.58 || !label.pass) throw new Error(`analyze label ${label.ratio} pass ${label.pass}`);
   if (action.ratio !== 4.2 || action.pass) throw new Error(`product action ${action.ratio} pass ${action.pass}`);
   const gap = score(withAnalyzeFill(tree, 0.42), "gap", "semantic.color.focus.gap", "semantic.color.analyze.fill", 3, "ui");
   if (gap.ratio !== 3.02 || !gap.pass) throw new Error(`focus gap ${gap.ratio} pass ${gap.pass}`);
+}
+
+function paintOpaque(token, hex, rgb) {
+  token.$type = "color";
+  token.$value = translucent(hex, rgb, 1);
+}
+
+function proveOwnProductAction(dark, light) {
+  const darkCopy = clone(dark);
+  const lightCopy = clone(light);
+  paintOpaque(lookup(darkCopy, "semantic.color.productLink.action"), "#6ee7b7", [110 / 255, 231 / 255, 183 / 255]);
+  paintOpaque(lookup(lightCopy, "semantic.color.productLink.action"), "#047857", [4 / 255, 120 / 255, 87 / 255]);
+  proveAnalyzeBackdrop(darkCopy);
+  const darkReport = contrastReport("dark", darkCopy);
+  const lightReport = contrastReport("light", lightCopy);
+  if (darkReport.failed || lightReport.failed) {
+    throw new Error(`own product action failed dark ${darkReport.failed} light ${lightReport.failed}`);
+  }
 }
 
 function requireDeclaredBackground(tree) {
@@ -513,6 +537,7 @@ function main() {
   proveBadgeUnderlay(darkTree);
   proveBadgeUnderlay(lightTree);
   proveAnalyzeBackdrop(darkTree);
+  proveOwnProductAction(darkTree, lightTree);
   requireDeclaredBackground(darkTree);
   requireDeclaredBackground(lightTree);
   mkdirSync(buildDir, { recursive: true });
